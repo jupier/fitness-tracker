@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Alert, Button, Center, Paper, Stack, Text, TextInput, Title } from '@mantine/core'
+import { Alert, Button, Center, Group, Paper, Stack, Text, TextInput, Title } from '@mantine/core'
 import { IconMail } from '@tabler/icons-react'
 import { supabase } from '../lib/supabase'
+import { Logo } from './Logo'
 
 export function AuthView() {
   const [email, setEmail] = useState('')
@@ -28,7 +29,10 @@ export function AuthView() {
       <Paper withBorder shadow="md" p="xl" radius="md" maw={400} w="100%">
         <Stack gap="md">
           <Stack gap={4}>
-            <Title order={2}>Routine</Title>
+            <Group gap={8}>
+              <Logo size={30} />
+              <Title order={2}>Routine</Title>
+            </Group>
             <Text c="dimmed" size="sm">
               Suis ta routine sportive et ton poids.
             </Text>

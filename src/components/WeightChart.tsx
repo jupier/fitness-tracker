@@ -1,19 +1,15 @@
-import { useState } from 'react'
-import { Badge, Button, Group, NumberInput, Paper, Stack, Text, Title } from '@mantine/core'
+import { Badge, Group, Paper, Stack, Text, Title } from '@mantine/core'
 import { LineChart } from '@mantine/charts'
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { movingAverage, sortedByDate, weightDelta } from '../lib/weight'
 import type { WeightEntry } from '../types'
 
-interface WeightSectionProps {
+interface WeightChartProps {
   entries: WeightEntry[]
-  onAdd: (weight: number, date: string) => void
 }
 
-export function WeightSection({ entries, onAdd }: WeightSectionProps) {
-  const [value, setValue] = useState<number | ''>('')
-
+export function WeightChart({ entries }: WeightChartProps) {
   const sorted = sortedByDate(entries)
   const averages = movingAverage(entries)
   const chartData = sorted.map((e, i) => ({
@@ -23,17 +19,11 @@ export function WeightSection({ entries, onAdd }: WeightSectionProps) {
   }))
   const delta = weightDelta(entries, 30)
 
-  const submit = () => {
-    if (value === '' || value <= 0) return
-    onAdd(value, dayjs().format('YYYY-MM-DD'))
-    setValue('')
-  }
-
   return (
     <Paper withBorder radius="md" p="md">
       <Stack gap="md">
         <Group justify="space-between">
-          <Title order={4}>Poids</Title>
+          <Title order={4}>Poids dans le temps</Title>
           {delta !== null && (
             <Badge
               variant="light"
@@ -44,20 +34,6 @@ export function WeightSection({ entries, onAdd }: WeightSectionProps) {
               {delta.toFixed(1)} kg / 30j
             </Badge>
           )}
-        </Group>
-        <Group align="flex-end">
-          <NumberInput
-            label="Aujourd'hui (kg)"
-            placeholder="72.5"
-            decimalScale={1}
-            step={0.1}
-            value={value}
-            onChange={(v) => setValue(typeof v === 'number' ? v : '')}
-            w={140}
-          />
-          <Button onClick={submit} disabled={value === ''}>
-            Enregistrer
-          </Button>
         </Group>
         {chartData.length > 1 ? (
           <LineChart

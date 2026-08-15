@@ -1,25 +1,21 @@
 import { useState } from 'react'
-import { Button, Collapse, Group, Paper, Stack, Text, Textarea, Title, UnstyledButton } from '@mantine/core'
-import { LineChart } from '@mantine/charts'
+import { Button, Collapse, Group, Paper, Stack, Textarea, Title, UnstyledButton } from '@mantine/core'
 import dayjs from 'dayjs'
 import { MOOD_LEVELS } from '../lib/mood'
 import type { MoodEntry } from '../types'
 
-interface MoodSectionProps {
+interface MoodInputProps {
   entries: MoodEntry[]
   onAdd: (mood: number, date: string) => void
   onUpdateNote: (id: string, note: string | null) => void
 }
 
-export function MoodSection({ entries, onAdd, onUpdateNote }: MoodSectionProps) {
+export function MoodInput({ entries, onAdd, onUpdateNote }: MoodInputProps) {
   const [noteOpen, setNoteOpen] = useState(false)
   const [noteValue, setNoteValue] = useState('')
 
   const today = dayjs().format('YYYY-MM-DD')
   const todayEntry = entries.find((e) => e.date === today)
-
-  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date))
-  const chartData = sorted.map((e) => ({ date: dayjs(e.date).format('D MMM'), humeur: e.mood }))
 
   const pick = (mood: number) => {
     onAdd(mood, today)
@@ -86,21 +82,6 @@ export function MoodSection({ entries, onAdd, onUpdateNote }: MoodSectionProps) 
               </Stack>
             </Collapse>
           </Stack>
-        )}
-        {chartData.length > 1 ? (
-          <LineChart
-            h={200}
-            data={chartData}
-            dataKey="date"
-            series={[{ name: 'humeur', color: 'indigo.6', label: 'Humeur' }]}
-            yAxisProps={{ domain: [1, 5], ticks: [1, 2, 3, 4, 5] }}
-            curveType="linear"
-            withDots
-          />
-        ) : (
-          <Text size="sm" c="dimmed">
-            Ajoute au moins deux humeurs pour voir la courbe.
-          </Text>
         )}
       </Stack>
     </Paper>

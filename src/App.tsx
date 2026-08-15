@@ -8,27 +8,33 @@ import {
   Group,
   Loader,
   Stack,
+  Tabs,
   Title,
   useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { IconLogout, IconMoon, IconSun } from '@tabler/icons-react'
+import { IconCalendar, IconChartBar, IconHistory, IconLogout, IconMoon, IconSun } from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useSession } from './hooks/useSession'
 import { useWorkouts } from './hooks/useWorkouts'
 import { useWeightEntries } from './hooks/useWeightEntries'
 import { useMoodEntries } from './hooks/useMoodEntries'
 import { AuthView } from './components/AuthView'
+import { Logo } from './components/Logo'
 import { WeekGrid } from './components/WeekGrid'
 import { DayLogModal } from './components/DayLogModal'
 import { WeekSummary } from './components/WeekSummary'
 import { StreakBanner } from './components/StreakBanner'
 import { BadgesPanel } from './components/BadgesPanel'
 import { ReminderBanner } from './components/ReminderBanner'
-import { WeightSection } from './components/WeightSection'
-import { MoodSection } from './components/MoodSection'
+import { WeightInput } from './components/WeightInput'
+import { WeightChart } from './components/WeightChart'
+import { MoodInput } from './components/MoodInput'
+import { MoodChart } from './components/MoodChart'
 import { ActivityTrendChart } from './components/ActivityTrendChart'
+import { ActivityBreakdownChart } from './components/ActivityBreakdownChart'
 import { ActivityHeatmap } from './components/ActivityHeatmap'
+import { MoodActivityChart } from './components/MoodActivityChart'
 import { HistoryList } from './components/HistoryList'
 import { deriveActivityTypes } from './lib/activityTypes'
 import { startOfIsoWeek, toDateKey, weekDays } from './lib/dates'
@@ -104,7 +110,10 @@ function AppContent({ userId }: { userId: string }) {
     <AppShell header={{ height: 56 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Title order={3}>Routine</Title>
+          <Group gap={8}>
+            <Logo size={26} />
+            <Title order={3}>Routine</Title>
+          </Group>
           <Group gap="xs">
             <ActionIcon
               variant="subtle"
@@ -125,42 +134,73 @@ function AppContent({ userId }: { userId: string }) {
       </AppShell.Header>
       <AppShell.Main>
         <Container size="sm">
-          <Stack gap="lg" py="md">
-            <Divider label="Progression" labelPosition="left" />
-            <StreakBanner streak={streak} />
-            <BadgesPanel unlocked={unlockedBadges} />
+          <Tabs defaultValue="calendrier" keepMounted={false}>
+            <Tabs.List grow>
+              <Tabs.Tab value="calendrier" leftSection={<IconCalendar size={16} />}>
+                Calendrier
+              </Tabs.Tab>
+              <Tabs.Tab value="analyse" leftSection={<IconChartBar size={16} />}>
+                Analyse
+              </Tabs.Tab>
+              <Tabs.Tab value="historique" leftSection={<IconHistory size={16} />}>
+                Historique
+              </Tabs.Tab>
+            </Tabs.List>
 
-            <Divider label="Cette semaine" labelPosition="left" />
-            <ReminderBanner weekWorkouts={currentWeekWorkouts} />
-            <WeekGrid
-              weekStart={weekStart}
-              onWeekChange={setWeekStart}
-              workouts={workouts}
-              moodEntries={moodEntries}
-              activityTypes={activityTypes}
-              onDayClick={setSelectedDay}
-            />
-            <WeekSummary workouts={weekWorkouts} />
+            <Tabs.Panel value="calendrier">
+              <Stack gap="lg" py="md">
+                <Divider label="Progression" labelPosition="left" />
+                <StreakBanner streak={streak} />
+                <BadgesPanel unlocked={unlockedBadges} />
 
-            <Divider label="Poids & humeur" labelPosition="left" />
-            <WeightSection entries={entries} onAdd={addEntry} />
-            <MoodSection entries={moodEntries} onAdd={addMoodEntry} onUpdateNote={updateMoodNote} />
+                <Divider label="Cette semaine" labelPosition="left" />
+                <ReminderBanner weekWorkouts={currentWeekWorkouts} />
+                <WeekGrid
+                  weekStart={weekStart}
+                  onWeekChange={setWeekStart}
+                  workouts={workouts}
+                  moodEntries={moodEntries}
+                  activityTypes={activityTypes}
+                  onDayClick={setSelectedDay}
+                />
+                <WeekSummary workouts={weekWorkouts} />
 
-            <Divider label="Tendances" labelPosition="left" />
-            <ActivityTrendChart workouts={workouts} />
-            <ActivityHeatmap workouts={workouts} />
+                <Divider label="Poids & humeur" labelPosition="left" />
+                <WeightInput onAdd={addEntry} />
+                <MoodInput entries={moodEntries} onAdd={addMoodEntry} onUpdateNote={updateMoodNote} />
+              </Stack>
+            </Tabs.Panel>
 
-            <Divider label="Historique" labelPosition="left" />
-            <HistoryList
-              workouts={workouts}
-              weightEntries={entries}
-              moodEntries={moodEntries}
-              activityTypes={activityTypes}
-              onRemoveWorkout={removeWorkout}
-              onRemoveWeight={removeEntry}
-              onRemoveMood={removeMoodEntry}
-            />
-          </Stack>
+            <Tabs.Panel value="analyse">
+              <Stack gap="lg" py="md">
+                <Divider label="Poids & humeur" labelPosition="left" />
+                <WeightChart entries={entries} />
+                <MoodChart entries={moodEntries} />
+
+                <Divider label="Activité" labelPosition="left" />
+                <ActivityTrendChart workouts={workouts} />
+                <ActivityBreakdownChart workouts={workouts} activityTypes={activityTypes} />
+                <ActivityHeatmap workouts={workouts} />
+
+                <Divider label="Corrélations" labelPosition="left" />
+                <MoodActivityChart workouts={workouts} moodEntries={moodEntries} />
+              </Stack>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="historique">
+              <Stack gap="lg" py="md">
+                <HistoryList
+                  workouts={workouts}
+                  weightEntries={entries}
+                  moodEntries={moodEntries}
+                  activityTypes={activityTypes}
+                  onRemoveWorkout={removeWorkout}
+                  onRemoveWeight={removeEntry}
+                  onRemoveMood={removeMoodEntry}
+                />
+              </Stack>
+            </Tabs.Panel>
+          </Tabs>
         </Container>
       </AppShell.Main>
       <DayLogModal

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Group, Paper, Stack, Text, Title, Tooltip } from '@mantine/core'
 import dayjs from 'dayjs'
 import { buildHeatmap, intensityLevel } from '../lib/heatmap'
@@ -16,12 +17,18 @@ interface ActivityHeatmapProps {
 
 export function ActivityHeatmap({ workouts }: ActivityHeatmapProps) {
   const weeks = buildHeatmap(workouts, 12)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el) el.scrollLeft = el.scrollWidth
+  }, [weeks.length])
 
   return (
     <Paper withBorder radius="md" p="md">
       <Stack gap="sm">
         <Title order={4}>Calendrier annuel</Title>
-        <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
+        <div ref={scrollRef} style={{ overflowX: 'auto', paddingBottom: 4 }}>
           <Group gap={3} wrap="nowrap" align="flex-start">
             {weeks.map((week) => (
               <Stack key={week.days[0].date} gap={3}>
