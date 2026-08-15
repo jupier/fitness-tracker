@@ -68,7 +68,14 @@ export function WeekGrid({ weekStart, onWeekChange, workouts, activityTypes, onD
                     {entries.map((e) => {
                       const cfg = activityConfig(e.type, activityTypes)
                       const Icon = cfg.icon
-                      return <Icon key={e.id} size={14} color={`var(--mantine-color-${cfg.color}-6)`} />
+                      return (
+                        <Icon
+                          key={e.id}
+                          size={14}
+                          color={`var(--mantine-color-${cfg.color}-6)`}
+                          className="activity-pop"
+                        />
+                      )
                     })}
                   </Group>
                 </Stack>

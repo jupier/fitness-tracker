@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActionIcon,
   AppShell,
@@ -10,6 +10,7 @@ import {
   Title,
   useMantineColorScheme,
 } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
 import { IconLogout, IconMoon, IconSun } from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useSession } from './hooks/useSession'
@@ -20,6 +21,7 @@ import { WeekGrid } from './components/WeekGrid'
 import { DayLogModal } from './components/DayLogModal'
 import { WeekSummary } from './components/WeekSummary'
 import { StreakBanner } from './components/StreakBanner'
+import { BadgesPanel } from './components/BadgesPanel'
 import { ReminderBanner } from './components/ReminderBanner'
 import { WeightSection } from './components/WeightSection'
 import { ActivityTrendChart } from './components/ActivityTrendChart'
@@ -27,7 +29,9 @@ import { ActivityHeatmap } from './components/ActivityHeatmap'
 import { HistoryList } from './components/HistoryList'
 import { deriveActivityTypes } from './lib/activityTypes'
 import { startOfIsoWeek, toDateKey, weekDays } from './lib/dates'
-import { computeStreak } from './lib/goals'
+import { computeStreak, weekGoalsMet } from './lib/goals'
+import { BADGES, unlockedBadgeIds } from './lib/badges'
+import { fireConfetti, hasCelebratedWeek, markCelebratedWeek } from './lib/celebrate'
 import { supabase } from './lib/supabase'
 
 function AppContent({ userId }: { userId: string }) {
@@ -45,6 +49,51 @@ function AppContent({ userId }: { userId: string }) {
 
   const currentWeekKeys = weekDays(startOfIsoWeek(dayjs())).map(toDateKey)
   const currentWeekWorkouts = workouts.filter((w) => currentWeekKeys.includes(w.date))
+
+  const unlockedBadges = useMemo(
+    () => unlockedBadgeIds({ workouts, weightEntries: entries, streak }),
+    [workouts, entries, streak],
+  )
+  const previousBadgesRef = useRef<Set<string> | null>(null)
+
+  useEffect(() => {
+    if (previousBadgesRef.current === null) {
+      previousBadgesRef.current = unlockedBadges
+      return
+    }
+    const newlyUnlocked = [...unlockedBadges].filter((id) => !previousBadgesRef.current!.has(id))
+    if (newlyUnlocked.length > 0) {
+      fireConfetti()
+      for (const id of newlyUnlocked) {
+        const badge = BADGES.find((b) => b.id === id)
+        if (!badge) continue
+        const Icon = badge.icon
+        notifications.show({
+          title: 'Nouveau badge débloqué !',
+          message: badge.label,
+          color: 'yellow',
+          icon: <Icon size={18} />,
+        })
+      }
+    }
+    previousBadgesRef.current = unlockedBadges
+  }, [unlockedBadges])
+
+  useEffect(() => {
+    const thisWeekStart = startOfIsoWeek(dayjs())
+    const weekKey = toDateKey(thisWeekStart)
+    const keys = weekDays(thisWeekStart).map(toDateKey)
+    const thisWeekWorkouts = workouts.filter((w) => keys.includes(w.date))
+    if (weekGoalsMet(thisWeekWorkouts) && !hasCelebratedWeek(weekKey)) {
+      markCelebratedWeek(weekKey)
+      fireConfetti()
+      notifications.show({
+        title: 'Objectifs de la semaine atteints !',
+        message: 'Bravo, continue comme ça 💪',
+        color: 'green',
+      })
+    }
+  }, [workouts])
 
   return (
     <AppShell header={{ height: 56 }} padding="md">
@@ -73,6 +122,7 @@ function AppContent({ userId }: { userId: string }) {
         <Container size="sm">
           <Stack gap="lg" py="md">
             <StreakBanner streak={streak} />
+            <BadgesPanel unlocked={unlockedBadges} />
             <ReminderBanner weekWorkouts={currentWeekWorkouts} />
             <WeekGrid
               weekStart={weekStart}

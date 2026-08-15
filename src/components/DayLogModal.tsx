@@ -66,7 +66,7 @@ function EntryRow({
       <Group justify="space-between" wrap="nowrap">
         <UnstyledButton onClick={() => setOpen((o) => !o)} style={{ flex: 1 }}>
           <Group gap={6}>
-            <Icon size={16} />
+            <Icon size={16} className="activity-pop" />
             <Text size="sm">{cfg.label}</Text>
             {entry.duration_minutes != null && (
               <Badge size="xs" variant="light" color="gray">

@@ -15,14 +15,17 @@
     "@mantine/dates": "^9.5.1",
     "@mantine/hooks": "^9.5.1",
     "@mantine/modals": "^9.5.1",
+    "@mantine/notifications": "^9.5.1",
     "@supabase/supabase-js": "^2.112.3",
     "@tabler/icons-react": "^3.46.0",
+    "canvas-confetti": "^1.9.4",
     "dayjs": "^1.11.21",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "recharts": "^3.10.1"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
