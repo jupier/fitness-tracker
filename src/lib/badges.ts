@@ -1,5 +1,5 @@
 import { IconAward, IconBrain, IconDog, IconFlame, IconMedal, IconRun, IconSparkles, IconWeight } from '@tabler/icons-react'
-import { DOG_TYPE } from '../constants'
+import { DOG_TYPE, GOAL_EXCLUDED_TYPES } from '../constants'
 import type { MoodEntry, WeightEntry, Workout } from '../types'
 
 export interface BadgeContext {
@@ -65,7 +65,8 @@ export const BADGES: BadgeConfig[] = [
     label: 'Régulier·ère',
     description: '25 séances de sport',
     icon: IconRun,
-    isUnlocked: (ctx) => ctx.workouts.filter((w) => w.type !== DOG_TYPE).length >= 25,
+    isUnlocked: (ctx) =>
+      ctx.workouts.filter((w) => w.type !== DOG_TYPE && !GOAL_EXCLUDED_TYPES.includes(w.type)).length >= 25,
   },
   {
     id: 'weight-10',

@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { DOG_TYPE, WEEKLY_GOALS } from '../constants'
+import { DOG_TYPE, GOAL_EXCLUDED_TYPES, WEEKLY_GOALS } from '../constants'
 import { startOfIsoWeek, toDateKey, weekDays } from './dates'
 import type { Workout } from '../types'
 
@@ -13,7 +13,7 @@ export function weekProgress(weekWorkouts: Workout[]): WeekProgress {
   let chien = 0
   for (const w of weekWorkouts) {
     if (w.type === DOG_TYPE) chien++
-    else sport++
+    else if (!GOAL_EXCLUDED_TYPES.includes(w.type)) sport++
   }
   return { sport, chien }
 }
