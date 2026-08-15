@@ -1,31 +1,41 @@
-import { ActionIcon, Badge, Group, Paper, Rating, Stack, Text, Title } from '@mantine/core'
+import { ActionIcon, Badge, Group, Paper, Rating, Stack, Text } from '@mantine/core'
 import { IconTrash, IconWeight } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { activityConfig } from '../lib/activityTypes'
 import { confirmDelete } from '../lib/confirm'
+import { moodLevel } from '../lib/mood'
 import type { ActivityTypeConfig } from '../constants'
-import type { WeightEntry, Workout } from '../types'
+import type { MoodEntry, WeightEntry, Workout } from '../types'
 
 interface HistoryListProps {
   workouts: Workout[]
   weightEntries: WeightEntry[]
+  moodEntries: MoodEntry[]
   activityTypes: ActivityTypeConfig[]
   onRemoveWorkout: (id: string) => void
   onRemoveWeight: (id: string) => void
+  onRemoveMood: (id: string) => void
   limit?: number
 }
 
 export function HistoryList({
   workouts,
   weightEntries,
+  moodEntries,
   activityTypes,
   onRemoveWorkout,
   onRemoveWeight,
+  onRemoveMood,
   limit = 10,
 }: HistoryListProps) {
-  const items: ({ kind: 'workout'; data: Workout } | { kind: 'weight'; data: WeightEntry })[] = [
+  const items: (
+    | { kind: 'workout'; data: Workout }
+    | { kind: 'weight'; data: WeightEntry }
+    | { kind: 'mood'; data: MoodEntry }
+  )[] = [
     ...workouts.map((w) => ({ kind: 'workout' as const, data: w })),
     ...weightEntries.map((w) => ({ kind: 'weight' as const, data: w })),
+    ...moodEntries.map((m) => ({ kind: 'mood' as const, data: m })),
   ]
 
   items.sort((a, b) => {
@@ -39,7 +49,6 @@ export function HistoryList({
   return (
     <Paper withBorder radius="md" p="md">
       <Stack gap="sm">
-        <Title order={4}>Historique récent</Title>
         {visible.length === 0 && (
           <Text size="sm" c="dimmed">
             Rien pour l'instant.
@@ -80,22 +89,53 @@ export function HistoryList({
               </Group>
             )
           }
+          if (item.kind === 'weight') {
+            return (
+              <Group key={`e-${item.data.id}`} justify="space-between">
+                <Group gap={8}>
+                  <IconWeight size={16} />
+                  <Text size="sm">{item.data.weight} kg</Text>
+                  <Text size="xs" c="dimmed">
+                    {dayjs(item.data.date).format('D MMM')}
+                  </Text>
+                </Group>
+                <ActionIcon
+                  variant="subtle"
+                  color="red"
+                  onClick={() =>
+                    confirmDelete(
+                      `Supprimer la pesée de ${item.data.weight} kg du ${dayjs(item.data.date).format('D MMM')} ?`,
+                      () => onRemoveWeight(item.data.id),
+                    )
+                  }
+                  aria-label="Supprimer"
+                >
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Group>
+            )
+          }
+          const level = moodLevel(item.data.mood)
           return (
-            <Group key={`e-${item.data.id}`} justify="space-between">
-              <Group gap={8}>
-                <IconWeight size={16} />
-                <Text size="sm">{item.data.weight} kg</Text>
+            <Group key={`m-${item.data.id}`} justify="space-between" wrap="nowrap">
+              <Group gap={8} wrap="wrap">
+                <Text size="sm">{level.emoji}</Text>
+                <Text size="sm">{level.label}</Text>
                 <Text size="xs" c="dimmed">
                   {dayjs(item.data.date).format('D MMM')}
                 </Text>
+                {item.data.note && (
+                  <Text size="xs" c="dimmed" fs="italic">
+                    "{item.data.note}"
+                  </Text>
+                )}
               </Group>
               <ActionIcon
                 variant="subtle"
                 color="red"
                 onClick={() =>
-                  confirmDelete(
-                    `Supprimer la pesée de ${item.data.weight} kg du ${dayjs(item.data.date).format('D MMM')} ?`,
-                    () => onRemoveWeight(item.data.id),
+                  confirmDelete(`Supprimer l'humeur du ${dayjs(item.data.date).format('D MMM')} ?`, () =>
+                    onRemoveMood(item.data.id),
                   )
                 }
                 aria-label="Supprimer"

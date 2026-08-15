@@ -20,7 +20,7 @@ export function ActivityHeatmap({ workouts }: ActivityHeatmapProps) {
   return (
     <Paper withBorder radius="md" p="md">
       <Stack gap="sm">
-        <Title order={4}>Vue d'ensemble</Title>
+        <Title order={4}>Calendrier annuel</Title>
         <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
           <Group gap={3} wrap="nowrap" align="flex-start">
             {weeks.map((week) => (

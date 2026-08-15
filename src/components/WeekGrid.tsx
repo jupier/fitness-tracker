@@ -3,18 +3,20 @@ import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
 import { DAY_LABELS, isToday, toDateKey, weekDays, weekLabel } from '../lib/dates'
 import { activityConfig } from '../lib/activityTypes'
+import { moodLevel } from '../lib/mood'
 import type { ActivityTypeConfig } from '../constants'
-import type { Workout } from '../types'
+import type { MoodEntry, Workout } from '../types'
 
 interface WeekGridProps {
   weekStart: Dayjs
   onWeekChange: (start: Dayjs) => void
   workouts: Workout[]
+  moodEntries: MoodEntry[]
   activityTypes: ActivityTypeConfig[]
   onDayClick: (date: Dayjs) => void
 }
 
-export function WeekGrid({ weekStart, onWeekChange, workouts, activityTypes, onDayClick }: WeekGridProps) {
+export function WeekGrid({ weekStart, onWeekChange, workouts, moodEntries, activityTypes, onDayClick }: WeekGridProps) {
   const days = weekDays(weekStart)
   const byDate = new Map<string, Workout[]>()
   for (const w of workouts) {
@@ -22,6 +24,7 @@ export function WeekGrid({ weekStart, onWeekChange, workouts, activityTypes, onD
     list.push(w)
     byDate.set(w.date, list)
   }
+  const moodByDate = new Map(moodEntries.map((m) => [m.date, m]))
 
   return (
     <Stack gap="sm">
@@ -46,6 +49,7 @@ export function WeekGrid({ weekStart, onWeekChange, workouts, activityTypes, onD
         {days.map((day, i) => {
           const key = toDateKey(day)
           const entries = byDate.get(key) ?? []
+          const mood = moodByDate.get(key)
           const today = isToday(day)
           const future = day.isAfter(dayjs(), 'day')
           return (
@@ -54,9 +58,23 @@ export function WeekGrid({ weekStart, onWeekChange, workouts, activityTypes, onD
                 withBorder
                 radius="md"
                 p={6}
+                pos="relative"
                 bg={today ? 'var(--mantine-color-blue-light)' : undefined}
                 style={today ? { borderColor: 'var(--mantine-color-blue-outline)' } : undefined}
               >
+                {mood && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 4,
+                      right: 4,
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: `light-dark(${moodLevel(mood.mood).colorLight}, ${moodLevel(mood.mood).colorDark})`,
+                    }}
+                  />
+                )}
                 <Stack gap={4} align="center">
                   <Text size="xs" c="dimmed">
                     {DAY_LABELS[i]}

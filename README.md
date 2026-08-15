@@ -1,8 +1,8 @@
 # Routine
 
 Suivi de routine sportive (sport libre : rameur, VTT, footing, etc. + sorties
-chien) et de poids. Front React + Mantine, hébergé sur GitHub Pages, données
-stockées dans Supabase.
+chien), de poids et d'humeur. Front React + Mantine, hébergé sur GitHub Pages,
+données stockées dans Supabase.
 
 ## Setup
 
@@ -10,9 +10,9 @@ stockées dans Supabase.
 
 1. Créer un compte / projet sur [supabase.com](https://supabase.com) (gratuit).
 2. Dans l'éditeur SQL du projet, exécuter dans l'ordre les fichiers du dossier
-   [`migrations/`](./migrations) : `001_init.sql` puis `002_activity_details.sql`.
-   (Pour un projet déjà initialisé avec juste `001_init.sql`, exécute uniquement
-   la migration manquante.)
+   [`migrations/`](./migrations) : `001_init.sql`, `002_activity_details.sql`,
+   puis `003_mood_entries.sql`. (Pour un projet déjà initialisé, exécute
+   uniquement les migrations manquantes.)
 3. Dans **Project Settings → API** (ou **Data API**), récupérer l'**URL** du
    projet et la clé **Publishable key** (remplaçante de l'ancienne clé `anon`).
 4. Renseigner ces deux valeurs dans [`src/config.ts`](./src/config.ts).

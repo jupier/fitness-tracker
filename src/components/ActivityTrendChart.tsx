@@ -29,7 +29,7 @@ export function ActivityTrendChart({ workouts, weeks = 10 }: ActivityTrendChartP
   return (
     <Paper withBorder radius="md" p="md">
       <Stack gap="md">
-        <Title order={4}>Régularité</Title>
+        <Title order={4}>Séances par semaine</Title>
         {hasData ? (
           <BarChart
             h={220}

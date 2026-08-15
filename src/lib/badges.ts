@@ -1,10 +1,11 @@
-import { IconAward, IconDog, IconFlame, IconMedal, IconRun, IconSparkles, IconWeight } from '@tabler/icons-react'
+import { IconAward, IconBrain, IconDog, IconFlame, IconMedal, IconRun, IconSparkles, IconWeight } from '@tabler/icons-react'
 import { DOG_TYPE } from '../constants'
-import type { WeightEntry, Workout } from '../types'
+import type { MoodEntry, WeightEntry, Workout } from '../types'
 
 export interface BadgeContext {
   workouts: Workout[]
   weightEntries: WeightEntry[]
+  moodEntries: MoodEntry[]
   streak: number
 }
 
@@ -72,6 +73,13 @@ export const BADGES: BadgeConfig[] = [
     description: '10 pesées enregistrées',
     icon: IconWeight,
     isUnlocked: (ctx) => ctx.weightEntries.length >= 10,
+  },
+  {
+    id: 'mood-10',
+    label: 'Introspectif·ve',
+    description: '10 humeurs enregistrées',
+    icon: IconBrain,
+    isUnlocked: (ctx) => ctx.moodEntries.length >= 10,
   },
 ]
 
