@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import type { Workout } from '../types'
 
-type WorkoutDetails = Partial<Pick<Workout, 'duration_minutes' | 'notes' | 'rating'>>
+type WorkoutDetails = Partial<
+  Pick<Workout, 'duration_minutes' | 'distance_km' | 'notes' | 'rating' | 'strava_embed_id' | 'strava_embed_token'>
+>
 
 export function useWorkouts(userId: string | undefined) {
   const [workouts, setWorkouts] = useState<Workout[]>([])

@@ -11,7 +11,8 @@ données stockées dans Supabase.
 1. Créer un compte / projet sur [supabase.com](https://supabase.com) (gratuit).
 2. Dans l'éditeur SQL du projet, exécuter dans l'ordre les fichiers du dossier
    [`migrations/`](./migrations) : `001_init.sql`, `002_activity_details.sql`,
-   puis `003_mood_entries.sql`. (Pour un projet déjà initialisé, exécute
+   `003_mood_entries.sql`, `004_strava_link.sql`, puis
+   `005_workout_distance.sql`. (Pour un projet déjà initialisé, exécute
    uniquement les migrations manquantes.)
 3. Dans **Project Settings → API** (ou **Data API**), récupérer l'**URL** du
    projet et la clé **Publishable key** (remplaçante de l'ancienne clé `anon`).

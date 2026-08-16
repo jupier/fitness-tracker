@@ -5,15 +5,18 @@ export interface ActivityTypeConfig {
   label: string
   icon: typeof IconActivity
   color: string
+  // Types pour lesquels l'intégration Strava a du sens (pour l'instant : sorties
+  // cardio/GPS). Non proposé sur chien/muscu/jardinage/repos ni les types perso.
+  stravaEligible?: boolean
 }
 
 // Types suggérés par défaut. L'utilisateur peut en ajouter d'autres librement
 // (ex: footing occasionnel) — voir lib/activityTypes.ts.
 export const DEFAULT_ACTIVITY_TYPES: ActivityTypeConfig[] = [
-  { type: 'rameur', label: 'Rameur', icon: IconSwimming, color: 'blue' },
-  { type: 'vtt', label: 'VTT', icon: IconBike, color: 'orange' },
+  { type: 'rameur', label: 'Rameur', icon: IconSwimming, color: 'blue', stravaEligible: true },
+  { type: 'vtt', label: 'VTT', icon: IconBike, color: 'orange', stravaEligible: true },
   { type: 'chien', label: 'Chien', icon: IconDog, color: 'teal' },
-  { type: 'footing', label: 'Footing', icon: IconRun, color: 'grape' },
+  { type: 'footing', label: 'Footing', icon: IconRun, color: 'grape', stravaEligible: true },
   { type: 'musculation', label: 'Muscu', icon: IconBarbell, color: 'yellow' },
   { type: 'jardinage', label: 'Jardinage', icon: IconPlant2, color: 'lime' },
   { type: 'repos', label: 'Repos', icon: IconZzz, color: 'gray' },

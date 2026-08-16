@@ -5,7 +5,10 @@ export interface Workout {
   date: string
   notes: string | null
   duration_minutes: number | null
+  distance_km: number | null
   rating: number | null
+  strava_embed_id: string | null
+  strava_embed_token: string | null
   created_at: string
 }
 

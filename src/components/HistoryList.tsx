@@ -1,5 +1,5 @@
 import { ActionIcon, Badge, Group, Paper, Rating, Stack, Text } from '@mantine/core'
-import { IconTrash, IconWeight } from '@tabler/icons-react'
+import { IconBrandStrava, IconTrash, IconWeight } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { activityConfig } from '../lib/activityTypes'
 import { confirmDelete } from '../lib/confirm'
@@ -71,7 +71,26 @@ export function HistoryList({
                       {item.data.duration_minutes} min
                     </Badge>
                   )}
+                  {item.data.distance_km != null && (
+                    <Badge size="xs" variant="light" color="gray">
+                      {item.data.distance_km} km
+                    </Badge>
+                  )}
                   {item.data.rating != null && <Rating value={item.data.rating} size="xs" readOnly />}
+                  {item.data.strava_embed_id && (
+                    <ActionIcon
+                      component="a"
+                      href={`https://www.strava.com/activities/${item.data.strava_embed_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      variant="light"
+                      color="orange"
+                      size="xs"
+                      aria-label="Voir sur Strava"
+                    >
+                      <IconBrandStrava size={12} />
+                    </ActionIcon>
+                  )}
                 </Group>
                 <ActionIcon
                   variant="subtle"

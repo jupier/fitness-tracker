@@ -15,15 +15,22 @@ import {
   TextInput,
   UnstyledButton,
 } from '@mantine/core'
-import { IconChevronDown, IconChevronUp, IconPlus, IconTrash } from '@tabler/icons-react'
+import { IconBrandStrava, IconChevronDown, IconChevronUp, IconPlus, IconTrash } from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
 import { activityConfig, resolveTypeInput } from '../lib/activityTypes'
 import { confirmDelete } from '../lib/confirm'
 import { toDateKey } from '../lib/dates'
+import { extractStravaEmbed } from '../lib/strava'
+import { StravaEmbed } from './StravaEmbed'
 import type { ActivityTypeConfig } from '../constants'
 import type { Workout } from '../types'
 
-type WorkoutDetails = Partial<Pick<Workout, 'duration_minutes' | 'notes' | 'rating'>>
+type WorkoutDetails = Partial<
+  Pick<
+    Workout,
+    'duration_minutes' | 'distance_km' | 'notes' | 'rating' | 'strava_embed_id' | 'strava_embed_token'
+  >
+>
 
 interface DayLogModalProps {
   date: Dayjs | null
@@ -48,16 +55,35 @@ function EntryRow({
 }) {
   const [open, setOpen] = useState(false)
   const [duration, setDuration] = useState<number | ''>(entry.duration_minutes ?? '')
+  const [distance, setDistance] = useState<number | ''>(entry.distance_km ?? '')
   const [note, setNote] = useState(entry.notes ?? '')
   const [rating, setRating] = useState(entry.rating ?? 0)
+  const [stravaInput, setStravaInput] = useState('')
+  const [stravaError, setStravaError] = useState(false)
   const Icon = cfg.icon
 
   const save = () => {
+    let strava_embed_id = entry.strava_embed_id
+    let strava_embed_token = entry.strava_embed_token
+    if (stravaInput.trim() !== '') {
+      const parsed = extractStravaEmbed(stravaInput)
+      if (!parsed) {
+        setStravaError(true)
+        return
+      }
+      strava_embed_id = parsed.id
+      strava_embed_token = parsed.token
+    }
+    setStravaError(false)
     onUpdate({
       duration_minutes: duration === '' ? null : duration,
+      distance_km: distance === '' ? null : distance,
       notes: note.trim() === '' ? null : note.trim(),
       rating: rating === 0 ? null : rating,
+      strava_embed_id,
+      strava_embed_token,
     })
+    setStravaInput('')
     setOpen(false)
   }
 
@@ -73,7 +99,17 @@ function EntryRow({
                 {entry.duration_minutes} min
               </Badge>
             )}
+            {entry.distance_km != null && (
+              <Badge size="xs" variant="light" color="gray">
+                {entry.distance_km} km
+              </Badge>
+            )}
             {entry.rating != null && <Rating value={entry.rating} size="xs" readOnly />}
+            {cfg.stravaEligible && entry.strava_embed_id && (
+              <Badge size="xs" variant="light" color="orange" leftSection={<IconBrandStrava size={11} />}>
+                Strava
+              </Badge>
+            )}
             {open ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
           </Group>
         </UnstyledButton>
@@ -83,14 +119,26 @@ function EntryRow({
       </Group>
       <Collapse expanded={open}>
         <Stack gap="xs" pl={22} pb="xs">
-          <NumberInput
-            label="Durée (min)"
-            placeholder="45"
-            value={duration}
-            onChange={(v) => setDuration(typeof v === 'number' ? v : '')}
-            min={0}
-            w={140}
-          />
+          <Group>
+            <NumberInput
+              label="Durée (min)"
+              placeholder="45"
+              value={duration}
+              onChange={(v) => setDuration(typeof v === 'number' ? v : '')}
+              min={0}
+              w={140}
+            />
+            <NumberInput
+              label="Distance (km)"
+              placeholder="5.2"
+              decimalScale={1}
+              step={0.1}
+              value={distance}
+              onChange={(v) => setDistance(typeof v === 'number' ? v : '')}
+              min={0}
+              w={140}
+            />
+          </Group>
           <div>
             <Text size="xs" fw={500} mb={4}>
               Note
@@ -105,6 +153,26 @@ function EntryRow({
             autosize
             minRows={2}
           />
+          {cfg.stravaEligible && (
+            <>
+              {entry.strava_embed_id && entry.strava_embed_token && (
+                <StravaEmbed activityId={entry.strava_embed_id} token={entry.strava_embed_token} />
+              )}
+              <Textarea
+                label={entry.strava_embed_id ? "Remplacer le code d'intégration Strava" : "Code d'intégration Strava"}
+                description="Sur Strava : ⋯ > Intégrer, puis colle le code ici tel quel"
+                placeholder='<div class="strava-embed-placeholder" data-embed-id="..." data-token="..."></div>'
+                value={stravaInput}
+                onChange={(e) => {
+                  setStravaInput(e.currentTarget.value)
+                  setStravaError(false)
+                }}
+                error={stravaError ? "Ce n'est pas un code d'intégration Strava valide" : undefined}
+                autosize
+                minRows={2}
+              />
+            </>
+          )}
           <Button size="xs" onClick={save} style={{ alignSelf: 'flex-start' }}>
             Enregistrer
           </Button>
@@ -130,7 +198,7 @@ export function DayLogModal({ date, workouts, activityTypes, onClose, onAdd, onR
   }
 
   return (
-    <Modal opened={!!date} onClose={onClose} title={date?.format('dddd D MMMM')} centered>
+    <Modal opened={!!date} onClose={onClose} title={date?.format('dddd D MMMM')} centered size="lg">
       <Stack gap="md">
         {entries.length > 0 && (
           <Stack gap={2}>
