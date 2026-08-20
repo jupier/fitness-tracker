@@ -1,22 +1,31 @@
 import { ActionIcon, Group, Paper, SimpleGrid, Stack, Text, UnstyledButton } from '@mantine/core'
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
+import { IconChevronLeft, IconChevronRight, IconWeight } from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
 import { DAY_LABELS, isToday, toDateKey, weekDays, weekLabel } from '../lib/dates'
 import { activityConfig } from '../lib/activityTypes'
 import { moodLevel } from '../lib/mood'
 import type { ActivityTypeConfig } from '../constants'
-import type { MoodEntry, Workout } from '../types'
+import type { MoodEntry, WeightEntry, Workout } from '../types'
 
 interface WeekGridProps {
   weekStart: Dayjs
   onWeekChange: (start: Dayjs) => void
   workouts: Workout[]
+  weightEntries: WeightEntry[]
   moodEntries: MoodEntry[]
   activityTypes: ActivityTypeConfig[]
   onDayClick: (date: Dayjs) => void
 }
 
-export function WeekGrid({ weekStart, onWeekChange, workouts, moodEntries, activityTypes, onDayClick }: WeekGridProps) {
+export function WeekGrid({
+  weekStart,
+  onWeekChange,
+  workouts,
+  weightEntries,
+  moodEntries,
+  activityTypes,
+  onDayClick,
+}: WeekGridProps) {
   const days = weekDays(weekStart)
   const byDate = new Map<string, Workout[]>()
   for (const w of workouts) {
@@ -25,6 +34,7 @@ export function WeekGrid({ weekStart, onWeekChange, workouts, moodEntries, activ
     byDate.set(w.date, list)
   }
   const moodByDate = new Map(moodEntries.map((m) => [m.date, m]))
+  const weightByDate = new Map(weightEntries.map((w) => [w.date, w]))
 
   return (
     <Stack gap="sm">
@@ -50,6 +60,7 @@ export function WeekGrid({ weekStart, onWeekChange, workouts, moodEntries, activ
           const key = toDateKey(day)
           const entries = byDate.get(key) ?? []
           const mood = moodByDate.get(key)
+          const weight = weightByDate.get(key)
           const today = isToday(day)
           const future = day.isAfter(dayjs(), 'day')
           return (
@@ -62,18 +73,16 @@ export function WeekGrid({ weekStart, onWeekChange, workouts, moodEntries, activ
                 bg={today ? 'var(--mantine-color-blue-light)' : undefined}
                 style={today ? { borderColor: 'var(--mantine-color-blue-outline)' } : undefined}
               >
-                {mood && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 4,
-                      right: 4,
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      background: `light-dark(${moodLevel(mood.mood).colorLight}, ${moodLevel(mood.mood).colorDark})`,
-                    }}
+                {weight && (
+                  <IconWeight
+                    size={10}
+                    style={{ position: 'absolute', top: 5, left: 5, color: 'var(--mantine-color-dimmed)' }}
                   />
+                )}
+                {mood && (
+                  <span style={{ position: 'absolute', top: 3, right: 4, fontSize: 11, lineHeight: 1 }}>
+                    {moodLevel(mood.mood).emoji}
+                  </span>
                 )}
                 <Stack gap={4} align="center">
                   <Text size="xs" c="dimmed">

@@ -38,3 +38,5 @@ export const WEEKLY_GOALS = {
   sport: 2,
   chien: 2,
 }
+
+export const WEIGHT_GOAL_KG = 85

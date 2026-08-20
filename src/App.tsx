@@ -38,9 +38,7 @@ import { WeekSummary } from './components/WeekSummary'
 import { StreakBanner } from './components/StreakBanner'
 import { BadgesPanel } from './components/BadgesPanel'
 import { ReminderBanner } from './components/ReminderBanner'
-import { WeightInput } from './components/WeightInput'
 import { WeightChart } from './components/WeightChart'
-import { MoodInput } from './components/MoodInput'
 import { MoodChart } from './components/MoodChart'
 import { ActivityTrendChart } from './components/ActivityTrendChart'
 import { ActivityBreakdownChart } from './components/ActivityBreakdownChart'
@@ -216,15 +214,12 @@ function AppContent({ userId }: { userId: string }) {
                   weekStart={weekStart}
                   onWeekChange={setWeekStart}
                   workouts={workouts}
+                  weightEntries={entries}
                   moodEntries={moodEntries}
                   activityTypes={activityTypes}
                   onDayClick={setSelectedDay}
                 />
                 <WeekSummary workouts={weekWorkouts} />
-
-                <Divider label="Poids & humeur" labelPosition="left" />
-                <WeightInput onAdd={addEntry} />
-                <MoodInput entries={moodEntries} onAdd={addMoodEntry} onUpdateNote={updateMoodNote} />
               </Stack>
             </Tabs.Panel>
 
@@ -268,6 +263,11 @@ function AppContent({ userId }: { userId: string }) {
         onAdd={addWorkout}
         onRemove={removeWorkout}
         onUpdate={updateWorkout}
+        weightEntries={entries}
+        onAddWeight={addEntry}
+        moodEntries={moodEntries}
+        onAddMood={addMoodEntry}
+        onUpdateMoodNote={updateMoodNote}
       />
     </AppShell>
   )

@@ -3,6 +3,7 @@ import { LineChart } from '@mantine/charts'
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { movingAverage, sortedByDate, weightDelta } from '../lib/weight'
+import { WEIGHT_GOAL_KG } from '../constants'
 import type { WeightEntry } from '../types'
 
 interface WeightChartProps {
@@ -18,6 +19,14 @@ export function WeightChart({ entries }: WeightChartProps) {
     moyenne: averages[i]?.value,
   }))
   const delta = weightDelta(entries, 30)
+
+  const values = [...chartData.flatMap((d) => [d.poids, d.moyenne]), WEIGHT_GOAL_KG].filter(
+    (v): v is number => typeof v === 'number',
+  )
+  const minValue = Math.min(...values)
+  const maxValue = Math.max(...values)
+  const padding = Math.max(1, (maxValue - minValue) * 0.15)
+  const yDomain: [number, number] = [Math.floor(minValue - padding), Math.ceil(maxValue + padding)]
 
   return (
     <Paper withBorder radius="md" p="md">
@@ -46,6 +55,8 @@ export function WeightChart({ entries }: WeightChartProps) {
             ]}
             curveType="linear"
             withDots={chartData.length < 40}
+            referenceLines={[{ y: WEIGHT_GOAL_KG, label: `Objectif (${WEIGHT_GOAL_KG} kg)`, color: 'gray.5' }]}
+            yAxisProps={{ domain: yDomain }}
           />
         ) : (
           <Text size="sm" c="dimmed">

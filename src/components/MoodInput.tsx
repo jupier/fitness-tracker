@@ -1,34 +1,33 @@
 import { useState } from 'react'
 import { Button, Collapse, Group, Paper, Stack, Textarea, Title, UnstyledButton } from '@mantine/core'
-import dayjs from 'dayjs'
 import { MOOD_LEVELS } from '../lib/mood'
 import type { MoodEntry } from '../types'
 
 interface MoodInputProps {
+  date: string
   entries: MoodEntry[]
   onAdd: (mood: number, date: string) => void
   onUpdateNote: (id: string, note: string | null) => void
 }
 
-export function MoodInput({ entries, onAdd, onUpdateNote }: MoodInputProps) {
+export function MoodInput({ date, entries, onAdd, onUpdateNote }: MoodInputProps) {
   const [noteOpen, setNoteOpen] = useState(false)
   const [noteValue, setNoteValue] = useState('')
 
-  const today = dayjs().format('YYYY-MM-DD')
-  const todayEntry = entries.find((e) => e.date === today)
+  const dayEntry = entries.find((e) => e.date === date)
 
   const pick = (mood: number) => {
-    onAdd(mood, today)
+    onAdd(mood, date)
   }
 
   const openNote = () => {
-    setNoteValue(todayEntry?.note ?? '')
+    setNoteValue(dayEntry?.note ?? '')
     setNoteOpen(true)
   }
 
   const saveNote = () => {
-    if (!todayEntry) return
-    onUpdateNote(todayEntry.id, noteValue.trim() === '' ? null : noteValue.trim())
+    if (!dayEntry) return
+    onUpdateNote(dayEntry.id, noteValue.trim() === '' ? null : noteValue.trim())
     setNoteOpen(false)
   }
 
@@ -38,7 +37,7 @@ export function MoodInput({ entries, onAdd, onUpdateNote }: MoodInputProps) {
         <Title order={4}>Humeur</Title>
         <Group justify="center" gap="xs">
           {MOOD_LEVELS.map((level) => {
-            const selected = todayEntry?.mood === level.value
+            const selected = dayEntry?.mood === level.value
             return (
               <UnstyledButton
                 key={level.value}
@@ -60,11 +59,11 @@ export function MoodInput({ entries, onAdd, onUpdateNote }: MoodInputProps) {
             )
           })}
         </Group>
-        {todayEntry && (
+        {dayEntry && (
           <Stack gap={4} align="center">
             {!noteOpen && (
               <Button variant="subtle" size="xs" onClick={openNote}>
-                {todayEntry.note ? 'Modifier la note' : 'Ajouter une note'}
+                {dayEntry.note ? 'Modifier la note' : 'Ajouter une note'}
               </Button>
             )}
             <Collapse expanded={noteOpen} style={{ width: '100%' }}>

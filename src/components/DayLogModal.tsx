@@ -5,6 +5,7 @@ import {
   Badge,
   Button,
   Collapse,
+  Divider,
   Group,
   Modal,
   NumberInput,
@@ -22,8 +23,10 @@ import { confirmDelete } from '../lib/confirm'
 import { toDateKey } from '../lib/dates'
 import { extractStravaEmbed } from '../lib/strava'
 import { StravaEmbed } from './StravaEmbed'
+import { WeightInput } from './WeightInput'
+import { MoodInput } from './MoodInput'
 import type { ActivityTypeConfig } from '../constants'
-import type { Workout } from '../types'
+import type { MoodEntry, WeightEntry, Workout } from '../types'
 
 type WorkoutDetails = Partial<
   Pick<
@@ -40,6 +43,11 @@ interface DayLogModalProps {
   onAdd: (type: string, date: string) => void
   onRemove: (id: string) => void
   onUpdate: (id: string, patch: WorkoutDetails) => void
+  weightEntries: WeightEntry[]
+  onAddWeight: (weight: number, date: string) => void
+  moodEntries: MoodEntry[]
+  onAddMood: (mood: number, date: string) => void
+  onUpdateMoodNote: (id: string, note: string | null) => void
 }
 
 function EntryRow({
@@ -182,7 +190,20 @@ function EntryRow({
   )
 }
 
-export function DayLogModal({ date, workouts, activityTypes, onClose, onAdd, onRemove, onUpdate }: DayLogModalProps) {
+export function DayLogModal({
+  date,
+  workouts,
+  activityTypes,
+  onClose,
+  onAdd,
+  onRemove,
+  onUpdate,
+  weightEntries,
+  onAddWeight,
+  moodEntries,
+  onAddMood,
+  onUpdateMoodNote,
+}: DayLogModalProps) {
   const [customOpen, setCustomOpen] = useState(false)
   const [customValue, setCustomValue] = useState('')
 
@@ -265,6 +286,14 @@ export function DayLogModal({ date, workouts, activityTypes, onClose, onAdd, onR
                 </Button>
               </Group>
             </Collapse>
+
+            {dateKey && (
+              <>
+                <Divider />
+                <WeightInput date={dateKey} entries={weightEntries} onAdd={onAddWeight} />
+                <MoodInput date={dateKey} entries={moodEntries} onAdd={onAddMood} onUpdateNote={onUpdateMoodNote} />
+              </>
+            )}
           </>
         )}
       </Stack>
