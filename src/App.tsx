@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActionIcon,
+  Alert,
   AppShell,
+  Button,
   Center,
   Container,
   Divider,
@@ -9,11 +11,20 @@ import {
   Loader,
   Stack,
   Tabs,
+  Text,
   Title,
   useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
-import { IconCalendar, IconChartBar, IconHistory, IconLogout, IconMoon, IconSun } from '@tabler/icons-react'
+import {
+  IconAlertTriangle,
+  IconCalendar,
+  IconChartBar,
+  IconHistory,
+  IconLogout,
+  IconMoon,
+  IconSun,
+} from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useSession } from './hooks/useSession'
 import { useWorkouts } from './hooks/useWorkouts'
@@ -38,22 +49,52 @@ import { MoodActivityChart } from './components/MoodActivityChart'
 import { HistoryList } from './components/HistoryList'
 import { deriveActivityTypes } from './lib/activityTypes'
 import { startOfIsoWeek, toDateKey, weekDays } from './lib/dates'
-import { computeStreak, weekGoalsMet } from './lib/goals'
+import { computeDayStreak, computeStreak, weekGoalsMet } from './lib/goals'
 import { BADGES, unlockedBadgeIds } from './lib/badges'
 import { fireConfetti, hasCelebratedWeek, markCelebratedWeek } from './lib/celebrate'
 import { supabase } from './lib/supabase'
 
 function AppContent({ userId }: { userId: string }) {
-  const { workouts, addWorkout, updateWorkout, removeWorkout } = useWorkouts(userId)
-  const { entries, addEntry, removeEntry } = useWeightEntries(userId)
-  const { entries: moodEntries, addEntry: addMoodEntry, updateNote: updateMoodNote, removeEntry: removeMoodEntry } =
-    useMoodEntries(userId)
+  const {
+    workouts,
+    loading: workoutsLoading,
+    error: workoutsError,
+    addWorkout,
+    updateWorkout,
+    removeWorkout,
+    refresh: refreshWorkouts,
+  } = useWorkouts(userId)
+  const {
+    entries,
+    loading: weightLoading,
+    error: weightError,
+    addEntry,
+    removeEntry,
+    refresh: refreshWeight,
+  } = useWeightEntries(userId)
+  const {
+    entries: moodEntries,
+    loading: moodLoading,
+    error: moodError,
+    addEntry: addMoodEntry,
+    updateNote: updateMoodNote,
+    removeEntry: removeMoodEntry,
+    refresh: refreshMood,
+  } = useMoodEntries(userId)
+  const dataLoaded = !workoutsLoading && !weightLoading && !moodLoading
+  const hasLoadError = workoutsError || weightError || moodError
+  const retryLoad = () => {
+    refreshWorkouts()
+    refreshWeight()
+    refreshMood()
+  }
   const [weekStart, setWeekStart] = useState(() => startOfIsoWeek(dayjs()))
   const [selectedDay, setSelectedDay] = useState<Dayjs | null>(null)
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 
   const activityTypes = useMemo(() => deriveActivityTypes(workouts), [workouts])
   const streak = useMemo(() => computeStreak(workouts), [workouts])
+  const dayStreak = useMemo(() => computeDayStreak(workouts), [workouts])
 
   const weekKeys = weekDays(weekStart).map(toDateKey)
   const weekWorkouts = workouts.filter((w) => weekKeys.includes(w.date))
@@ -62,12 +103,17 @@ function AppContent({ userId }: { userId: string }) {
   const currentWeekWorkouts = workouts.filter((w) => currentWeekKeys.includes(w.date))
 
   const unlockedBadges = useMemo(
-    () => unlockedBadgeIds({ workouts, weightEntries: entries, moodEntries, streak }),
-    [workouts, entries, moodEntries, streak],
+    () => unlockedBadgeIds({ workouts, weightEntries: entries, moodEntries, streak, dayStreak }),
+    [workouts, entries, moodEntries, streak, dayStreak],
   )
   const previousBadgesRef = useRef<Set<string> | null>(null)
 
   useEffect(() => {
+    // Tant que les données ne sont pas encore arrivées de Supabase, `unlockedBadges`
+    // reflète un état vide transitoire — l'utiliser comme référence ferait passer
+    // tous les badges déjà obtenus pour "nouveaux" dès que les vraies données arrivent.
+    if (!dataLoaded) return
+
     if (previousBadgesRef.current === null) {
       previousBadgesRef.current = unlockedBadges
       return
@@ -88,9 +134,10 @@ function AppContent({ userId }: { userId: string }) {
       }
     }
     previousBadgesRef.current = unlockedBadges
-  }, [unlockedBadges])
+  }, [unlockedBadges, dataLoaded])
 
   useEffect(() => {
+    if (!dataLoaded) return
     const thisWeekStart = startOfIsoWeek(dayjs())
     const weekKey = toDateKey(thisWeekStart)
     const keys = weekDays(thisWeekStart).map(toDateKey)
@@ -104,7 +151,7 @@ function AppContent({ userId }: { userId: string }) {
         color: 'green',
       })
     }
-  }, [workouts])
+  }, [workouts, dataLoaded])
 
   return (
     <AppShell header={{ height: 56 }} padding="md">
@@ -134,6 +181,16 @@ function AppContent({ userId }: { userId: string }) {
       </AppShell.Header>
       <AppShell.Main>
         <Container size="sm">
+          {hasLoadError && (
+            <Alert color="red" icon={<IconAlertTriangle size={16} />} title="Certaines données n'ont pas pu charger" mb="md">
+              <Group justify="space-between" wrap="nowrap">
+                <Text size="sm">Vérifie ta connexion et réessaie.</Text>
+                <Button size="xs" color="red" variant="light" onClick={retryLoad}>
+                  Réessayer
+                </Button>
+              </Group>
+            </Alert>
+          )}
           <Tabs defaultValue="calendrier" keepMounted={false}>
             <Tabs.List grow>
               <Tabs.Tab value="calendrier" leftSection={<IconCalendar size={16} />}>
@@ -150,7 +207,7 @@ function AppContent({ userId }: { userId: string }) {
             <Tabs.Panel value="calendrier">
               <Stack gap="lg" py="md">
                 <Divider label="Progression" labelPosition="left" />
-                <StreakBanner streak={streak} />
+                <StreakBanner streak={streak} dayStreak={dayStreak} />
                 <BadgesPanel unlocked={unlockedBadges} />
 
                 <Divider label="Cette semaine" labelPosition="left" />

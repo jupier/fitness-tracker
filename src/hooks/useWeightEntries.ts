@@ -1,25 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useSupabaseCollection } from '../lib/useSupabaseCollection'
 import type { WeightEntry } from '../types'
 
 export function useWeightEntries(userId: string | undefined) {
-  const [entries, setEntries] = useState<WeightEntry[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const refresh = useCallback(async () => {
-    if (!userId) return
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('weight_entries')
-      .select('*')
-      .order('date', { ascending: false })
-    if (!error && data) setEntries(data)
-    setLoading(false)
-  }, [userId])
-
-  useEffect(() => {
-    refresh()
-  }, [refresh])
+  const {
+    data: entries,
+    setData: setEntries,
+    loading,
+    error,
+    refresh,
+  } = useSupabaseCollection<WeightEntry>('weight_entries', userId, 'date')
 
   const addEntry = useCallback(
     async (weight: number, date: string) => {
@@ -33,13 +24,16 @@ export function useWeightEntries(userId: string | undefined) {
         setEntries((prev) => [data, ...prev.filter((e) => e.date !== date)])
       }
     },
-    [userId],
+    [userId, setEntries],
   )
 
-  const removeEntry = useCallback(async (id: string) => {
-    const { error } = await supabase.from('weight_entries').delete().eq('id', id)
-    if (!error) setEntries((prev) => prev.filter((e) => e.id !== id))
-  }, [])
+  const removeEntry = useCallback(
+    async (id: string) => {
+      const { error } = await supabase.from('weight_entries').delete().eq('id', id)
+      if (!error) setEntries((prev) => prev.filter((e) => e.id !== id))
+    },
+    [setEntries],
+  )
 
-  return { entries, loading, addEntry, removeEntry, refresh }
+  return { entries, loading, error, addEntry, removeEntry, refresh }
 }

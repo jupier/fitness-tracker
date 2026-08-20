@@ -3,6 +3,27 @@ import { DOG_TYPE, GOAL_EXCLUDED_TYPES, WEEKLY_GOALS } from '../constants'
 import { startOfIsoWeek, toDateKey, weekDays } from './dates'
 import type { Workout } from '../types'
 
+/**
+ * Nombre de jours consécutifs (en remontant depuis aujourd'hui) avec au moins
+ * une activité loggée (n'importe quel type, y compris repos). Si rien n'est
+ * encore loggé aujourd'hui, on part d'hier sans casser la série — la journée
+ * n'est simplement pas terminée.
+ */
+export function computeDayStreak(workouts: Workout[]): number {
+  const loggedDates = new Set(workouts.map((w) => w.date))
+  let cursor = dayjs()
+  if (!loggedDates.has(toDateKey(cursor))) {
+    cursor = cursor.subtract(1, 'day')
+  }
+
+  let streak = 0
+  while (loggedDates.has(toDateKey(cursor))) {
+    streak++
+    cursor = cursor.subtract(1, 'day')
+  }
+  return streak
+}
+
 export interface WeekProgress {
   sport: number
   chien: number

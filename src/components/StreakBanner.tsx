@@ -1,31 +1,44 @@
-import { Group, Paper, Text, ThemeIcon } from '@mantine/core'
-import { IconFlame } from '@tabler/icons-react'
+import { Group, Paper, Stack, Text, ThemeIcon } from '@mantine/core'
+import { IconFlame, IconTrophy } from '@tabler/icons-react'
 
 interface StreakBannerProps {
   streak: number
+  dayStreak: number
 }
 
-export function StreakBanner({ streak }: StreakBannerProps) {
-  if (streak <= 0) {
-    return (
-      <Paper withBorder radius="md" p="sm">
-        <Text size="sm" c="dimmed">
-          Atteins tes objectifs cette semaine pour démarrer une série 🔥
-        </Text>
-      </Paper>
-    )
-  }
-
+export function StreakBanner({ streak, dayStreak }: StreakBannerProps) {
   return (
-    <Paper withBorder radius="md" p="sm" bg="var(--mantine-color-orange-light)">
-      <Group gap="sm">
-        <ThemeIcon color="orange" variant="light" size="lg" radius="xl">
-          <IconFlame size={20} />
-        </ThemeIcon>
-        <Text fw={600}>
-          {streak} semaine{streak > 1 ? 's' : ''} d'affilée avec tous les objectifs atteints
-        </Text>
-      </Group>
-    </Paper>
+    <Group grow gap="sm" align="stretch">
+      <Paper withBorder radius="md" p="sm" bg={dayStreak > 0 ? 'var(--mantine-color-orange-light)' : undefined}>
+        <Group gap="sm" wrap="nowrap">
+          <ThemeIcon color="orange" variant="light" size="lg" radius="xl">
+            <IconFlame size={20} />
+          </ThemeIcon>
+          <Stack gap={0}>
+            <Text fw={700} size="lg" lh={1.1}>
+              {dayStreak}
+            </Text>
+            <Text size="xs" c="dimmed">
+              jour{dayStreak > 1 ? 's' : ''} d'affilée
+            </Text>
+          </Stack>
+        </Group>
+      </Paper>
+      <Paper withBorder radius="md" p="sm" bg={streak > 0 ? 'var(--mantine-color-yellow-light)' : undefined}>
+        <Group gap="sm" wrap="nowrap">
+          <ThemeIcon color="yellow" variant="light" size="lg" radius="xl">
+            <IconTrophy size={20} />
+          </ThemeIcon>
+          <Stack gap={0}>
+            <Text fw={700} size="lg" lh={1.1}>
+              {streak}
+            </Text>
+            <Text size="xs" c="dimmed">
+              semaine{streak > 1 ? 's' : ''} d'objectifs
+            </Text>
+          </Stack>
+        </Group>
+      </Paper>
+    </Group>
   )
 }

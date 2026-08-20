@@ -1,25 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useSupabaseCollection } from '../lib/useSupabaseCollection'
 import type { MoodEntry } from '../types'
 
 export function useMoodEntries(userId: string | undefined) {
-  const [entries, setEntries] = useState<MoodEntry[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const refresh = useCallback(async () => {
-    if (!userId) return
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('mood_entries')
-      .select('*')
-      .order('date', { ascending: false })
-    if (!error && data) setEntries(data)
-    setLoading(false)
-  }, [userId])
-
-  useEffect(() => {
-    refresh()
-  }, [refresh])
+  const {
+    data: entries,
+    setData: setEntries,
+    loading,
+    error,
+    refresh,
+  } = useSupabaseCollection<MoodEntry>('mood_entries', userId, 'date')
 
   const addEntry = useCallback(
     async (mood: number, date: string) => {
@@ -33,18 +24,24 @@ export function useMoodEntries(userId: string | undefined) {
         setEntries((prev) => [data, ...prev.filter((e) => e.date !== date)])
       }
     },
-    [userId],
+    [userId, setEntries],
   )
 
-  const updateNote = useCallback(async (id: string, note: string | null) => {
-    const { data, error } = await supabase.from('mood_entries').update({ note }).eq('id', id).select().single()
-    if (!error && data) setEntries((prev) => prev.map((e) => (e.id === id ? data : e)))
-  }, [])
+  const updateNote = useCallback(
+    async (id: string, note: string | null) => {
+      const { data, error } = await supabase.from('mood_entries').update({ note }).eq('id', id).select().single()
+      if (!error && data) setEntries((prev) => prev.map((e) => (e.id === id ? data : e)))
+    },
+    [setEntries],
+  )
 
-  const removeEntry = useCallback(async (id: string) => {
-    const { error } = await supabase.from('mood_entries').delete().eq('id', id)
-    if (!error) setEntries((prev) => prev.filter((e) => e.id !== id))
-  }, [])
+  const removeEntry = useCallback(
+    async (id: string) => {
+      const { error } = await supabase.from('mood_entries').delete().eq('id', id)
+      if (!error) setEntries((prev) => prev.filter((e) => e.id !== id))
+    },
+    [setEntries],
+  )
 
-  return { entries, loading, addEntry, updateNote, removeEntry, refresh }
+  return { entries, loading, error, addEntry, updateNote, removeEntry, refresh }
 }
