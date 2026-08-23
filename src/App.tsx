@@ -10,9 +10,9 @@ import {
   Group,
   Loader,
   Stack,
-  Tabs,
   Text,
   Title,
+  UnstyledButton,
   useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
@@ -52,6 +52,14 @@ import { BADGES, unlockedBadgeIds } from './lib/badges'
 import { fireConfetti, hasCelebratedWeek, markCelebratedWeek } from './lib/celebrate'
 import { supabase } from './lib/supabase'
 
+type TabValue = 'calendrier' | 'analyse' | 'historique'
+
+const NAV_ITEMS: { value: TabValue; label: string; icon: typeof IconCalendar }[] = [
+  { value: 'calendrier', label: 'Calendrier', icon: IconCalendar },
+  { value: 'analyse', label: 'Analyse', icon: IconChartBar },
+  { value: 'historique', label: 'Historique', icon: IconHistory },
+]
+
 function AppContent({ userId }: { userId: string }) {
   const {
     workouts,
@@ -86,6 +94,7 @@ function AppContent({ userId }: { userId: string }) {
     refreshWeight()
     refreshMood()
   }
+  const [activeTab, setActiveTab] = useState<TabValue>('calendrier')
   const [weekStart, setWeekStart] = useState(() => startOfIsoWeek(dayjs()))
   const [selectedDay, setSelectedDay] = useState<Dayjs | null>(null)
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
@@ -152,7 +161,7 @@ function AppContent({ userId }: { userId: string }) {
   }, [workouts, dataLoaded])
 
   return (
-    <AppShell header={{ height: 56 }} padding="md">
+    <AppShell header={{ height: 56 }} footer={{ height: 64 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Group gap={8}>
@@ -189,72 +198,87 @@ function AppContent({ userId }: { userId: string }) {
               </Group>
             </Alert>
           )}
-          <Tabs defaultValue="calendrier" keepMounted={false}>
-            <Tabs.List grow>
-              <Tabs.Tab value="calendrier" leftSection={<IconCalendar size={16} />}>
-                Calendrier
-              </Tabs.Tab>
-              <Tabs.Tab value="analyse" leftSection={<IconChartBar size={16} />}>
-                Analyse
-              </Tabs.Tab>
-              <Tabs.Tab value="historique" leftSection={<IconHistory size={16} />}>
-                Historique
-              </Tabs.Tab>
-            </Tabs.List>
 
-            <Tabs.Panel value="calendrier">
-              <Stack gap="lg" py="md">
-                <Divider label="Progression" labelPosition="left" />
-                <StreakBanner streak={streak} dayStreak={dayStreak} />
-                <BadgesPanel unlocked={unlockedBadges} />
+          {activeTab === 'calendrier' && (
+            <Stack gap="lg" py="md">
+              <Divider label="Progression" labelPosition="left" />
+              <StreakBanner streak={streak} dayStreak={dayStreak} />
+              <BadgesPanel unlocked={unlockedBadges} />
 
-                <Divider label="Cette semaine" labelPosition="left" />
-                <ReminderBanner weekWorkouts={currentWeekWorkouts} />
-                <WeekGrid
-                  weekStart={weekStart}
-                  onWeekChange={setWeekStart}
-                  workouts={workouts}
-                  weightEntries={entries}
-                  moodEntries={moodEntries}
-                  activityTypes={activityTypes}
-                  onDayClick={setSelectedDay}
-                />
-                <WeekSummary workouts={weekWorkouts} />
-              </Stack>
-            </Tabs.Panel>
+              <Divider label="Cette semaine" labelPosition="left" />
+              <ReminderBanner weekWorkouts={currentWeekWorkouts} />
+              <WeekGrid
+                weekStart={weekStart}
+                onWeekChange={setWeekStart}
+                workouts={workouts}
+                weightEntries={entries}
+                moodEntries={moodEntries}
+                activityTypes={activityTypes}
+                onDayClick={setSelectedDay}
+              />
+              <WeekSummary workouts={weekWorkouts} />
+            </Stack>
+          )}
 
-            <Tabs.Panel value="analyse">
-              <Stack gap="lg" py="md">
-                <Divider label="Poids & humeur" labelPosition="left" />
-                <WeightChart entries={entries} />
-                <MoodChart entries={moodEntries} />
+          {activeTab === 'analyse' && (
+            <Stack gap="lg" py="md">
+              <Divider label="Poids & humeur" labelPosition="left" />
+              <WeightChart entries={entries} />
+              <MoodChart entries={moodEntries} />
 
-                <Divider label="Activité" labelPosition="left" />
-                <ActivityTrendChart workouts={workouts} />
-                <ActivityBreakdownChart workouts={workouts} activityTypes={activityTypes} />
-                <ActivityHeatmap workouts={workouts} />
+              <Divider label="Activité" labelPosition="left" />
+              <ActivityTrendChart workouts={workouts} />
+              <ActivityBreakdownChart workouts={workouts} activityTypes={activityTypes} />
+              <ActivityHeatmap workouts={workouts} />
 
-                <Divider label="Corrélations" labelPosition="left" />
-                <MoodActivityChart workouts={workouts} moodEntries={moodEntries} />
-              </Stack>
-            </Tabs.Panel>
+              <Divider label="Corrélations" labelPosition="left" />
+              <MoodActivityChart workouts={workouts} moodEntries={moodEntries} />
+            </Stack>
+          )}
 
-            <Tabs.Panel value="historique">
-              <Stack gap="lg" py="md">
-                <HistoryList
-                  workouts={workouts}
-                  weightEntries={entries}
-                  moodEntries={moodEntries}
-                  activityTypes={activityTypes}
-                  onRemoveWorkout={removeWorkout}
-                  onRemoveWeight={removeEntry}
-                  onRemoveMood={removeMoodEntry}
-                />
-              </Stack>
-            </Tabs.Panel>
-          </Tabs>
+          {activeTab === 'historique' && (
+            <Stack gap="lg" py="md">
+              <HistoryList
+                workouts={workouts}
+                weightEntries={entries}
+                moodEntries={moodEntries}
+                activityTypes={activityTypes}
+                onRemoveWorkout={removeWorkout}
+                onRemoveWeight={removeEntry}
+                onRemoveMood={removeMoodEntry}
+              />
+            </Stack>
+          )}
         </Container>
       </AppShell.Main>
+      <AppShell.Footer>
+        <Group grow h="100%" gap={0} px="xs">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon
+            const active = activeTab === item.value
+            return (
+              <UnstyledButton
+                key={item.value}
+                onClick={() => setActiveTab(item.value)}
+                style={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 2,
+                  color: active ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-dimmed)',
+                }}
+              >
+                <Icon size={22} />
+                <Text size="11px" fw={active ? 600 : 400}>
+                  {item.label}
+                </Text>
+              </UnstyledButton>
+            )
+          })}
+        </Group>
+      </AppShell.Footer>
       <DayLogModal
         date={selectedDay}
         workouts={workouts}

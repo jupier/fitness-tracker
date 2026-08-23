@@ -55,7 +55,7 @@ export function WeekGrid({
           <IconChevronRight size={18} />
         </ActionIcon>
       </Group>
-      <SimpleGrid cols={7} spacing="xs">
+      <SimpleGrid cols={{ base: 4, sm: 7 }} spacing="xs">
         {days.map((day, i) => {
           const key = toDateKey(day)
           const entries = byDate.get(key) ?? []
