@@ -24,6 +24,7 @@ import {
   IconLogout,
   IconMoon,
   IconSun,
+  IconTrophy,
 } from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useSession } from './hooks/useSession'
@@ -33,7 +34,7 @@ import { useMoodEntries } from './hooks/useMoodEntries'
 import { AuthView } from './components/AuthView'
 import { Logo } from './components/Logo'
 import { WeekGrid } from './components/WeekGrid'
-import { DayLogModal } from './components/DayLogModal'
+import { DayPanel } from './components/DayPanel'
 import { WeekSummary } from './components/WeekSummary'
 import { StreakBanner } from './components/StreakBanner'
 import { BadgesPanel } from './components/BadgesPanel'
@@ -44,6 +45,8 @@ import { ActivityTrendChart } from './components/ActivityTrendChart'
 import { ActivityBreakdownChart } from './components/ActivityBreakdownChart'
 import { ActivityHeatmap } from './components/ActivityHeatmap'
 import { MoodActivityChart } from './components/MoodActivityChart'
+import { WeeklyScoreChart } from './components/WeeklyScoreChart'
+import { WeekProfileChart } from './components/WeekProfileChart'
 import { HistoryList } from './components/HistoryList'
 import { deriveActivityTypes } from './lib/activityTypes'
 import { startOfIsoWeek, toDateKey, weekDays } from './lib/dates'
@@ -52,11 +55,12 @@ import { BADGES, unlockedBadgeIds } from './lib/badges'
 import { fireConfetti, hasCelebratedWeek, markCelebratedWeek } from './lib/celebrate'
 import { supabase } from './lib/supabase'
 
-type TabValue = 'calendrier' | 'analyse' | 'historique'
+type TabValue = 'calendrier' | 'analyse' | 'badges' | 'historique'
 
 const NAV_ITEMS: { value: TabValue; label: string; icon: typeof IconCalendar }[] = [
   { value: 'calendrier', label: 'Calendrier', icon: IconCalendar },
   { value: 'analyse', label: 'Analyse', icon: IconChartBar },
+  { value: 'badges', label: 'Badges', icon: IconTrophy },
   { value: 'historique', label: 'Historique', icon: IconHistory },
 ]
 
@@ -96,7 +100,7 @@ function AppContent({ userId }: { userId: string }) {
   }
   const [activeTab, setActiveTab] = useState<TabValue>('calendrier')
   const [weekStart, setWeekStart] = useState(() => startOfIsoWeek(dayjs()))
-  const [selectedDay, setSelectedDay] = useState<Dayjs | null>(null)
+  const [selectedDay, setSelectedDay] = useState<Dayjs>(() => dayjs())
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 
   const activityTypes = useMemo(() => deriveActivityTypes(workouts), [workouts])
@@ -203,7 +207,6 @@ function AppContent({ userId }: { userId: string }) {
             <Stack gap="lg" py="md">
               <Divider label="Progression" labelPosition="left" />
               <StreakBanner streak={streak} dayStreak={dayStreak} />
-              <BadgesPanel unlocked={unlockedBadges} />
 
               <Divider label="Cette semaine" labelPosition="left" />
               <ReminderBanner weekWorkouts={currentWeekWorkouts} />
@@ -214,14 +217,34 @@ function AppContent({ userId }: { userId: string }) {
                 weightEntries={entries}
                 moodEntries={moodEntries}
                 activityTypes={activityTypes}
+                selectedDate={toDateKey(selectedDay)}
                 onDayClick={setSelectedDay}
               />
               <WeekSummary workouts={weekWorkouts} />
+
+              <Divider label="Détail du jour" labelPosition="left" />
+              <DayPanel
+                date={selectedDay}
+                workouts={workouts}
+                activityTypes={activityTypes}
+                onAdd={addWorkout}
+                onRemove={removeWorkout}
+                onUpdate={updateWorkout}
+                weightEntries={entries}
+                onAddWeight={addEntry}
+                moodEntries={moodEntries}
+                onAddMood={addMoodEntry}
+                onUpdateMoodNote={updateMoodNote}
+              />
             </Stack>
           )}
 
           {activeTab === 'analyse' && (
             <Stack gap="lg" py="md">
+              <Divider label="Score & profil" labelPosition="left" />
+              <WeeklyScoreChart workouts={workouts} moodEntries={moodEntries} />
+              <WeekProfileChart workouts={workouts} weightEntries={entries} moodEntries={moodEntries} />
+
               <Divider label="Poids & humeur" labelPosition="left" />
               <WeightChart entries={entries} />
               <MoodChart entries={moodEntries} />
@@ -233,6 +256,12 @@ function AppContent({ userId }: { userId: string }) {
 
               <Divider label="Corrélations" labelPosition="left" />
               <MoodActivityChart workouts={workouts} moodEntries={moodEntries} />
+            </Stack>
+          )}
+
+          {activeTab === 'badges' && (
+            <Stack gap="lg" py="md">
+              <BadgesPanel unlocked={unlockedBadges} />
             </Stack>
           )}
 
@@ -279,20 +308,6 @@ function AppContent({ userId }: { userId: string }) {
           })}
         </Group>
       </AppShell.Footer>
-      <DayLogModal
-        date={selectedDay}
-        workouts={workouts}
-        activityTypes={activityTypes}
-        onClose={() => setSelectedDay(null)}
-        onAdd={addWorkout}
-        onRemove={removeWorkout}
-        onUpdate={updateWorkout}
-        weightEntries={entries}
-        onAddWeight={addEntry}
-        moodEntries={moodEntries}
-        onAddMood={addMoodEntry}
-        onUpdateMoodNote={updateMoodNote}
-      />
     </AppShell>
   )
 }

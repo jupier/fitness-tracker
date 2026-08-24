@@ -7,13 +7,14 @@ import {
   Collapse,
   Divider,
   Group,
-  Modal,
   NumberInput,
+  Paper,
   Rating,
   Stack,
   Text,
   Textarea,
   TextInput,
+  Title,
   UnstyledButton,
 } from '@mantine/core'
 import { IconBrandStrava, IconChevronDown, IconChevronUp, IconPlus, IconTrash } from '@tabler/icons-react'
@@ -35,11 +36,10 @@ type WorkoutDetails = Partial<
   >
 >
 
-interface DayLogModalProps {
-  date: Dayjs | null
+interface DayPanelProps {
+  date: Dayjs
   workouts: Workout[]
   activityTypes: ActivityTypeConfig[]
-  onClose: () => void
   onAdd: (type: string, date: string) => void
   onRemove: (id: string) => void
   onUpdate: (id: string, patch: WorkoutDetails) => void
@@ -190,11 +190,10 @@ function EntryRow({
   )
 }
 
-export function DayLogModal({
+export function DayPanel({
   date,
   workouts,
   activityTypes,
-  onClose,
   onAdd,
   onRemove,
   onUpdate,
@@ -203,24 +202,29 @@ export function DayLogModal({
   moodEntries,
   onAddMood,
   onUpdateMoodNote,
-}: DayLogModalProps) {
+}: DayPanelProps) {
   const [customOpen, setCustomOpen] = useState(false)
   const [customValue, setCustomValue] = useState('')
 
-  const dateKey = date ? toDateKey(date) : null
-  const entries = dateKey ? workouts.filter((w) => w.date === dateKey) : []
-  const isFuture = date ? date.isAfter(dayjs(), 'day') : false
+  const dateKey = toDateKey(date)
+  const entries = workouts.filter((w) => w.date === dateKey)
+  const isFuture = date.isAfter(dayjs(), 'day')
+  const isToday = date.isSame(dayjs(), 'day')
 
   const submitCustom = () => {
-    if (!customValue.trim() || !dateKey) return
+    if (!customValue.trim()) return
     onAdd(resolveTypeInput(customValue), dateKey)
     setCustomValue('')
     setCustomOpen(false)
   }
 
   return (
-    <Modal opened={!!date} onClose={onClose} title={date?.format('dddd D MMMM')} centered size="lg">
+    <Paper withBorder radius="md" p="md">
       <Stack gap="md">
+        <Title order={4} tt="capitalize">
+          {isToday ? "Aujourd'hui" : date.format('dddd D MMMM')}
+        </Title>
+
         {entries.length > 0 && (
           <Stack gap={2}>
             {entries.map((e) => {
@@ -237,6 +241,7 @@ export function DayLogModal({
             })}
           </Stack>
         )}
+
         {isFuture ? (
           <Alert color="gray" variant="light">
             Impossible de logger une activité dans le futur.
@@ -256,7 +261,7 @@ export function DayLogModal({
                     color={cfg.color}
                     size="xs"
                     leftSection={<Icon size={14} />}
-                    onClick={() => dateKey && onAdd(cfg.type, dateKey)}
+                    onClick={() => onAdd(cfg.type, dateKey)}
                   >
                     {cfg.label}
                   </Button>
@@ -287,16 +292,12 @@ export function DayLogModal({
               </Group>
             </Collapse>
 
-            {dateKey && (
-              <>
-                <Divider />
-                <WeightInput date={dateKey} entries={weightEntries} onAdd={onAddWeight} />
-                <MoodInput date={dateKey} entries={moodEntries} onAdd={onAddMood} onUpdateNote={onUpdateMoodNote} />
-              </>
-            )}
+            <Divider />
+            <WeightInput date={dateKey} entries={weightEntries} onAdd={onAddWeight} />
+            <MoodInput date={dateKey} entries={moodEntries} onAdd={onAddMood} onUpdateNote={onUpdateMoodNote} />
           </>
         )}
       </Stack>
-    </Modal>
+    </Paper>
   )
 }

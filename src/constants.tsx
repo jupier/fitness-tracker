@@ -1,4 +1,14 @@
-import { IconActivity, IconBarbell, IconBike, IconDog, IconPlant2, IconRun, IconSwimming, IconZzz } from '@tabler/icons-react'
+import {
+  IconActivity,
+  IconBarbell,
+  IconBike,
+  IconDog,
+  IconLawnMower,
+  IconPlant2,
+  IconRun,
+  IconSwimming,
+  IconZzz,
+} from '@tabler/icons-react'
 
 export interface ActivityTypeConfig {
   type: string
@@ -19,6 +29,7 @@ export const DEFAULT_ACTIVITY_TYPES: ActivityTypeConfig[] = [
   { type: 'footing', label: 'Footing', icon: IconRun, color: 'grape', stravaEligible: true },
   { type: 'musculation', label: 'Muscu', icon: IconBarbell, color: 'yellow' },
   { type: 'jardinage', label: 'Jardinage', icon: IconPlant2, color: 'lime' },
+  { type: 'tondeuse', label: 'Tondeuse', icon: IconLawnMower, color: 'cyan' },
   { type: 'repos', label: 'Repos', icon: IconZzz, color: 'gray' },
 ]
 
@@ -31,8 +42,12 @@ export const FALLBACK_ACTIVITY_TYPE: Omit<ActivityTypeConfig, 'type' | 'label'> 
 // Le chien a son propre objectif ; tout le reste compte comme "sport"...
 export const DOG_TYPE = 'chien'
 
+// Marqueur explicite "journée de repos" — pas une activité physique, utilisé
+// pour ne pas fausser les stats qui comparent jours actifs / jours inactifs.
+export const REST_TYPE = 'repos'
+
 // ...sauf ces types-là, suivis normalement mais exclus des objectifs.
-export const GOAL_EXCLUDED_TYPES = ['jardinage', 'repos']
+export const GOAL_EXCLUDED_TYPES = ['jardinage', 'tondeuse', REST_TYPE]
 
 export const WEEKLY_GOALS = {
   sport: 2,

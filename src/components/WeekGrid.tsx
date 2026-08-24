@@ -14,6 +14,7 @@ interface WeekGridProps {
   weightEntries: WeightEntry[]
   moodEntries: MoodEntry[]
   activityTypes: ActivityTypeConfig[]
+  selectedDate: string
   onDayClick: (date: Dayjs) => void
 }
 
@@ -24,6 +25,7 @@ export function WeekGrid({
   weightEntries,
   moodEntries,
   activityTypes,
+  selectedDate,
   onDayClick,
 }: WeekGridProps) {
   const days = weekDays(weekStart)
@@ -62,6 +64,7 @@ export function WeekGrid({
           const mood = moodByDate.get(key)
           const weight = weightByDate.get(key)
           const today = isToday(day)
+          const selected = key === selectedDate
           const future = day.isAfter(dayjs(), 'day')
           return (
             <UnstyledButton key={key} onClick={() => onDayClick(day)} style={{ opacity: future ? 0.5 : 1 }}>
@@ -71,7 +74,14 @@ export function WeekGrid({
                 p={6}
                 pos="relative"
                 bg={today ? 'var(--mantine-color-blue-light)' : undefined}
-                style={today ? { borderColor: 'var(--mantine-color-blue-outline)' } : undefined}
+                style={{
+                  borderColor: selected
+                    ? 'var(--mantine-color-violet-filled)'
+                    : today
+                      ? 'var(--mantine-color-blue-outline)'
+                      : undefined,
+                  borderWidth: selected ? 2 : undefined,
+                }}
               >
                 {weight && (
                   <IconWeight

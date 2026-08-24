@@ -40,6 +40,7 @@ export interface BadgeConfig {
   label: string
   description: string
   icon: typeof IconAward
+  category: string
   isUnlocked: (ctx: BadgeContext) => boolean
 }
 
@@ -78,13 +79,27 @@ function hasWeekVariety(workouts: Workout[], minTypes: number): boolean {
   return [...byWeek.values()].some((set) => set.size >= minTypes)
 }
 
+export const BADGE_CATEGORIES = [
+  'Débuts',
+  'Séries',
+  'Volume',
+  'Variété',
+  'Chien',
+  'Sport',
+  'Distance & durée',
+  'Poids',
+  'Humeur',
+  'Bonus',
+] as const
+
 export const BADGES: BadgeConfig[] = [
-  // Premiers pas
+  // Débuts
   {
     id: 'first-activity',
     label: 'Premier pas',
     description: 'Logger ta première activité',
     icon: IconMedal,
+    category: 'Débuts',
     isUnlocked: (ctx) => ctx.workouts.length >= 1,
   },
   {
@@ -92,15 +107,17 @@ export const BADGES: BadgeConfig[] = [
     label: 'Sur les rails',
     description: 'Atteindre les deux objectifs sur une semaine',
     icon: IconAward,
+    category: 'Débuts',
     isUnlocked: (ctx) => ctx.streak >= 1,
   },
 
-  // Streak de semaines
+  // Séries de semaines
   {
     id: 'streak-4',
     label: 'Un mois de suite',
     description: "4 semaines d'affilée avec les objectifs atteints",
     icon: IconFlame,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.streak >= 4,
   },
   {
@@ -108,6 +125,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Habitué·e',
     description: "8 semaines d'affilée avec les objectifs atteints",
     icon: IconFlame,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.streak >= 8,
   },
   {
@@ -115,6 +133,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Trois mois de suite',
     description: "12 semaines d'affilée avec les objectifs atteints",
     icon: IconTrophy,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.streak >= 12,
   },
   {
@@ -122,6 +141,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Six mois de suite',
     description: "26 semaines d'affilée avec les objectifs atteints",
     icon: IconDiamond,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.streak >= 26,
   },
   {
@@ -129,36 +149,41 @@ export const BADGES: BadgeConfig[] = [
     label: 'Une année entière',
     description: "52 semaines d'affilée avec les objectifs atteints",
     icon: IconCrown,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.streak >= 52,
   },
 
-  // Streak de jours
+  // Séries de jours
   {
     id: 'day-streak-3',
     label: 'Trois jours de suite',
-    description: 'Logger une activité 3 jours d\'affilée',
+    description: "Logger une activité 3 jours d'affilée",
     icon: IconBolt,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.dayStreak >= 3,
   },
   {
     id: 'day-streak-7',
     label: 'Semaine sans faute',
-    description: 'Logger une activité 7 jours d\'affilée',
+    description: "Logger une activité 7 jours d'affilée",
     icon: IconCalendarWeek,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.dayStreak >= 7,
   },
   {
     id: 'day-streak-30',
     label: 'Mois sans faute',
-    description: 'Logger une activité 30 jours d\'affilée',
+    description: "Logger une activité 30 jours d'affilée",
     icon: IconRocket,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.dayStreak >= 30,
   },
   {
     id: 'day-streak-100',
     label: 'Centurion',
-    description: 'Logger une activité 100 jours d\'affilée',
+    description: "Logger une activité 100 jours d'affilée",
     icon: IconCrown,
+    category: 'Séries',
     isUnlocked: (ctx) => ctx.dayStreak >= 100,
   },
 
@@ -168,6 +193,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Dix séances',
     description: '10 activités enregistrées au total',
     icon: IconStar,
+    category: 'Volume',
     isUnlocked: (ctx) => ctx.workouts.length >= 10,
   },
   {
@@ -175,6 +201,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Cinquante séances',
     description: '50 activités enregistrées au total',
     icon: IconStarFilled,
+    category: 'Volume',
     isUnlocked: (ctx) => ctx.workouts.length >= 50,
   },
   {
@@ -182,6 +209,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Centenaire',
     description: '100 activités enregistrées au total',
     icon: IconTrophy,
+    category: 'Volume',
     isUnlocked: (ctx) => ctx.workouts.length >= 100,
   },
 
@@ -191,13 +219,15 @@ export const BADGES: BadgeConfig[] = [
     label: 'Grand angle',
     description: "Essayer 3 types d'activité différents",
     icon: IconSparkles,
+    category: 'Variété',
     isUnlocked: (ctx) => new Set(ctx.workouts.map((w) => w.type)).size >= 3,
   },
   {
     id: 'week-variety',
     label: 'Touche-à-tout',
-    description: '4 types d\'activité différents sur une même semaine',
+    description: "4 types d'activité différents sur une même semaine",
     icon: IconPalette,
+    category: 'Variété',
     isUnlocked: (ctx) => hasWeekVariety(ctx.workouts, 4),
   },
 
@@ -207,6 +237,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Ami des chiens',
     description: '20 sorties chien',
     icon: IconDog,
+    category: 'Chien',
     isUnlocked: (ctx) => dogCount(ctx.workouts) >= 20,
   },
   {
@@ -214,6 +245,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Meilleur ami',
     description: '50 sorties chien',
     icon: IconDog,
+    category: 'Chien',
     isUnlocked: (ctx) => dogCount(ctx.workouts) >= 50,
   },
   {
@@ -221,6 +253,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Le chien te remercie',
     description: '100 sorties chien',
     icon: IconDog,
+    category: 'Chien',
     isUnlocked: (ctx) => dogCount(ctx.workouts) >= 100,
   },
 
@@ -230,6 +263,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Régulier·ère',
     description: '25 séances de sport',
     icon: IconRun,
+    category: 'Sport',
     isUnlocked: (ctx) => sportCount(ctx.workouts) >= 25,
   },
   {
@@ -237,6 +271,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Sportif·ve confirmé·e',
     description: '50 séances de sport',
     icon: IconRun,
+    category: 'Sport',
     isUnlocked: (ctx) => sportCount(ctx.workouts) >= 50,
   },
   {
@@ -244,6 +279,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Centurion du sport',
     description: '100 séances de sport',
     icon: IconRun,
+    category: 'Sport',
     isUnlocked: (ctx) => sportCount(ctx.workouts) >= 100,
   },
 
@@ -253,6 +289,7 @@ export const BADGES: BadgeConfig[] = [
     label: '50 km parcourus',
     description: 'Cumuler 50 km sur tes séances',
     icon: IconRoute,
+    category: 'Distance & durée',
     isUnlocked: (ctx) => totalDistance(ctx.workouts) >= 50,
   },
   {
@@ -260,6 +297,7 @@ export const BADGES: BadgeConfig[] = [
     label: '100 km parcourus',
     description: 'Cumuler 100 km sur tes séances',
     icon: IconRoute,
+    category: 'Distance & durée',
     isUnlocked: (ctx) => totalDistance(ctx.workouts) >= 100,
   },
   {
@@ -267,20 +305,23 @@ export const BADGES: BadgeConfig[] = [
     label: '500 km parcourus',
     description: 'Cumuler 500 km sur tes séances',
     icon: IconRoute,
+    category: 'Distance & durée',
     isUnlocked: (ctx) => totalDistance(ctx.workouts) >= 500,
   },
   {
     id: 'duration-600',
-    label: '10 heures d\'effort',
+    label: "10 heures d'effort",
     description: 'Cumuler 10h de séances chronométrées',
     icon: IconClock,
+    category: 'Distance & durée',
     isUnlocked: (ctx) => totalDuration(ctx.workouts) >= 600,
   },
   {
     id: 'duration-6000',
-    label: '100 heures d\'effort',
+    label: "100 heures d'effort",
     description: 'Cumuler 100h de séances chronométrées',
     icon: IconClock,
+    category: 'Distance & durée',
     isUnlocked: (ctx) => totalDuration(ctx.workouts) >= 6000,
   },
 
@@ -290,6 +331,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Suivi assidu',
     description: '10 pesées enregistrées',
     icon: IconWeight,
+    category: 'Poids',
     isUnlocked: (ctx) => ctx.weightEntries.length >= 10,
   },
   {
@@ -297,6 +339,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Suivi sur la durée',
     description: '30 pesées enregistrées',
     icon: IconWeight,
+    category: 'Poids',
     isUnlocked: (ctx) => ctx.weightEntries.length >= 30,
   },
   {
@@ -304,6 +347,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Suivi expert',
     description: '100 pesées enregistrées',
     icon: IconWeight,
+    category: 'Poids',
     isUnlocked: (ctx) => ctx.weightEntries.length >= 100,
   },
 
@@ -313,6 +357,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Introspectif·ve',
     description: '10 humeurs enregistrées',
     icon: IconBrain,
+    category: 'Humeur',
     isUnlocked: (ctx) => ctx.moodEntries.length >= 10,
   },
   {
@@ -320,6 +365,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Grand·e observateur·rice',
     description: '30 humeurs enregistrées',
     icon: IconBrain,
+    category: 'Humeur',
     isUnlocked: (ctx) => ctx.moodEntries.length >= 30,
   },
   {
@@ -327,15 +373,17 @@ export const BADGES: BadgeConfig[] = [
     label: 'Zen absolu',
     description: '100 humeurs enregistrées',
     icon: IconBrain,
+    category: 'Humeur',
     isUnlocked: (ctx) => ctx.moodEntries.length >= 100,
   },
 
-  // Divers
+  // Bonus
   {
     id: 'comeback',
     label: 'Retour en force',
     description: 'Reprendre après au moins 14 jours de pause',
     icon: IconArrowBackUp,
+    category: 'Bonus',
     isUnlocked: (ctx) => hasComeback(ctx.workouts),
   },
   {
@@ -343,6 +391,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Connecté',
     description: 'Lier une séance à une activité Strava',
     icon: IconBrandStrava,
+    category: 'Bonus',
     isUnlocked: (ctx) => ctx.workouts.some((w) => !!w.strava_embed_id),
   },
   {
@@ -350,6 +399,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Le mot juste',
     description: '10 séances avec un commentaire',
     icon: IconNotes,
+    category: 'Bonus',
     isUnlocked: (ctx) => ctx.workouts.filter((w) => !!w.notes).length >= 10,
   },
   {
@@ -357,6 +407,7 @@ export const BADGES: BadgeConfig[] = [
     label: 'Séance parfaite',
     description: 'Noter une séance 5 étoiles',
     icon: IconStarFilled,
+    category: 'Bonus',
     isUnlocked: (ctx) => ctx.workouts.some((w) => w.rating === 5),
   },
 ]

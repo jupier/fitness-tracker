@@ -37,6 +37,7 @@ export function ActivityHeatmap({ workouts }: ActivityHeatmapProps) {
                     <Tooltip
                       key={day.date}
                       label={`${dayjs(day.date).format('D MMM YYYY')} — ${day.count} activité${day.count > 1 ? 's' : ''}`}
+                      events={{ hover: true, focus: true, touch: true }}
                     >
                       <div
                         style={{
