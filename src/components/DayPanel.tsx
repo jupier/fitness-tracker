@@ -8,7 +8,6 @@ import {
   Divider,
   Group,
   NumberInput,
-  Paper,
   Rating,
   Stack,
   Text,
@@ -219,85 +218,83 @@ export function DayPanel({
   }
 
   return (
-    <Paper withBorder radius="md" p="md">
-      <Stack gap="md">
-        <Title order={4} tt="capitalize">
-          {isToday ? "Aujourd'hui" : date.format('dddd D MMMM')}
-        </Title>
+    <Stack gap="md">
+      <Title order={3} tt="capitalize">
+        {isToday ? "Aujourd'hui" : date.format('dddd D MMMM')}
+      </Title>
 
-        {entries.length > 0 && (
-          <Stack gap={2}>
-            {entries.map((e) => {
-              const cfg = activityConfig(e.type, activityTypes)
+      {entries.length > 0 && (
+        <Stack gap={2}>
+          {entries.map((e) => {
+            const cfg = activityConfig(e.type, activityTypes)
+            return (
+              <EntryRow
+                key={e.id}
+                entry={e}
+                cfg={cfg}
+                onRemove={() => confirmDelete(`Supprimer "${cfg.label}" de cette journée ?`, () => onRemove(e.id))}
+                onUpdate={(patch) => onUpdate(e.id, patch)}
+              />
+            )
+          })}
+        </Stack>
+      )}
+
+      {isFuture ? (
+        <Alert color="gray" variant="light">
+          Impossible de logger une activité dans le futur.
+        </Alert>
+      ) : (
+        <>
+          <Text size="xs" c="dimmed">
+            Ajouter une activité
+          </Text>
+          <Group gap="xs">
+            {activityTypes.map((cfg) => {
+              const Icon = cfg.icon
               return (
-                <EntryRow
-                  key={e.id}
-                  entry={e}
-                  cfg={cfg}
-                  onRemove={() => confirmDelete(`Supprimer "${cfg.label}" de cette journée ?`, () => onRemove(e.id))}
-                  onUpdate={(patch) => onUpdate(e.id, patch)}
-                />
+                <Button
+                  key={cfg.type}
+                  variant="light"
+                  color={cfg.color}
+                  size="xs"
+                  leftSection={<Icon size={14} />}
+                  onClick={() => onAdd(cfg.type, dateKey)}
+                >
+                  {cfg.label}
+                </Button>
               )
             })}
-          </Stack>
-        )}
-
-        {isFuture ? (
-          <Alert color="gray" variant="light">
-            Impossible de logger une activité dans le futur.
-          </Alert>
-        ) : (
-          <>
-            <Text size="xs" c="dimmed">
-              Ajouter une activité
-            </Text>
+            <Button
+              variant="subtle"
+              color="gray"
+              size="xs"
+              leftSection={<IconPlus size={14} />}
+              onClick={() => setCustomOpen((o) => !o)}
+            >
+              Autre
+            </Button>
+          </Group>
+          <Collapse expanded={customOpen}>
             <Group gap="xs">
-              {activityTypes.map((cfg) => {
-                const Icon = cfg.icon
-                return (
-                  <Button
-                    key={cfg.type}
-                    variant="light"
-                    color={cfg.color}
-                    size="xs"
-                    leftSection={<Icon size={14} />}
-                    onClick={() => onAdd(cfg.type, dateKey)}
-                  >
-                    {cfg.label}
-                  </Button>
-                )
-              })}
-              <Button
-                variant="subtle"
-                color="gray"
-                size="xs"
-                leftSection={<IconPlus size={14} />}
-                onClick={() => setCustomOpen((o) => !o)}
-              >
-                Autre
+              <TextInput
+                placeholder="Nom de l'activité"
+                value={customValue}
+                onChange={(e) => setCustomValue(e.currentTarget.value)}
+                onKeyDown={(e) => e.key === 'Enter' && submitCustom()}
+                style={{ flex: 1 }}
+              />
+              <Button onClick={submitCustom} disabled={!customValue.trim()}>
+                Ajouter
               </Button>
             </Group>
-            <Collapse expanded={customOpen}>
-              <Group gap="xs">
-                <TextInput
-                  placeholder="Nom de l'activité"
-                  value={customValue}
-                  onChange={(e) => setCustomValue(e.currentTarget.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && submitCustom()}
-                  style={{ flex: 1 }}
-                />
-                <Button onClick={submitCustom} disabled={!customValue.trim()}>
-                  Ajouter
-                </Button>
-              </Group>
-            </Collapse>
+          </Collapse>
 
-            <Divider />
-            <WeightInput date={dateKey} entries={weightEntries} onAdd={onAddWeight} />
-            <MoodInput date={dateKey} entries={moodEntries} onAdd={onAddMood} onUpdateNote={onUpdateMoodNote} />
-          </>
-        )}
-      </Stack>
-    </Paper>
+          <Divider />
+          <WeightInput date={dateKey} entries={weightEntries} onAdd={onAddWeight} />
+          <MoodInput date={dateKey} entries={moodEntries} onAdd={onAddMood} onUpdateNote={onUpdateMoodNote} />
+        </>
+      )}
+    </Stack>
   )
 }

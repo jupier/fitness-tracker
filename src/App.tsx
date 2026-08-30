@@ -18,6 +18,7 @@ import {
 import { notifications } from '@mantine/notifications'
 import {
   IconAlertTriangle,
+  IconArrowLeft,
   IconCalendar,
   IconChartBar,
   IconHistory,
@@ -99,16 +100,13 @@ function AppContent({ userId }: { userId: string }) {
     refreshMood()
   }
   const [activeTab, setActiveTab] = useState<TabValue>('calendrier')
-  const [weekStart, setWeekStart] = useState(() => startOfIsoWeek(dayjs()))
   const [selectedDay, setSelectedDay] = useState<Dayjs>(() => dayjs())
+  const [dayDetailOpen, setDayDetailOpen] = useState(false)
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 
   const activityTypes = useMemo(() => deriveActivityTypes(workouts), [workouts])
   const streak = useMemo(() => computeStreak(workouts), [workouts])
   const dayStreak = useMemo(() => computeDayStreak(workouts), [workouts])
-
-  const weekKeys = weekDays(weekStart).map(toDateKey)
-  const weekWorkouts = workouts.filter((w) => weekKeys.includes(w.date))
 
   const currentWeekKeys = weekDays(startOfIsoWeek(dayjs())).map(toDateKey)
   const currentWeekWorkouts = workouts.filter((w) => currentWeekKeys.includes(w.date))
@@ -203,26 +201,20 @@ function AppContent({ userId }: { userId: string }) {
             </Alert>
           )}
 
-          {activeTab === 'calendrier' && (
+          {activeTab === 'calendrier' && dayDetailOpen && (
             <Stack gap="lg" py="md">
-              <Divider label="Progression" labelPosition="left" />
-              <StreakBanner streak={streak} dayStreak={dayStreak} />
-
-              <Divider label="Cette semaine" labelPosition="left" />
-              <ReminderBanner weekWorkouts={currentWeekWorkouts} />
-              <WeekGrid
-                weekStart={weekStart}
-                onWeekChange={setWeekStart}
-                workouts={workouts}
-                weightEntries={entries}
-                moodEntries={moodEntries}
-                activityTypes={activityTypes}
-                selectedDate={toDateKey(selectedDay)}
-                onDayClick={setSelectedDay}
-              />
-              <WeekSummary workouts={weekWorkouts} />
-
-              <Divider label="Détail du jour" labelPosition="left" />
+              <Group gap="xs">
+                <ActionIcon
+                  variant="subtle"
+                  onClick={() => setDayDetailOpen(false)}
+                  aria-label="Retour au calendrier"
+                >
+                  <IconArrowLeft size={18} />
+                </ActionIcon>
+                <Text size="sm" c="dimmed">
+                  Retour au calendrier
+                </Text>
+              </Group>
               <DayPanel
                 date={selectedDay}
                 workouts={workouts}
@@ -235,6 +227,28 @@ function AppContent({ userId }: { userId: string }) {
                 moodEntries={moodEntries}
                 onAddMood={addMoodEntry}
                 onUpdateMoodNote={updateMoodNote}
+              />
+            </Stack>
+          )}
+
+          {activeTab === 'calendrier' && !dayDetailOpen && (
+            <Stack gap="lg" py="md">
+              <Divider label="Progression" labelPosition="left" />
+              <StreakBanner streak={streak} dayStreak={dayStreak} />
+              <WeekSummary workouts={currentWeekWorkouts} />
+
+              <Divider label="Journal" labelPosition="left" />
+              <ReminderBanner weekWorkouts={currentWeekWorkouts} />
+              <WeekGrid
+                workouts={workouts}
+                weightEntries={entries}
+                moodEntries={moodEntries}
+                activityTypes={activityTypes}
+                selectedDate={toDateKey(selectedDay)}
+                onDayClick={(day) => {
+                  setSelectedDay(day)
+                  setDayDetailOpen(true)
+                }}
               />
             </Stack>
           )}
