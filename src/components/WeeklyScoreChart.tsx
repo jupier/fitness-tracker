@@ -31,6 +31,9 @@ export function WeeklyScoreChart({ workouts, moodEntries, weeks = 10 }: WeeklySc
     <Paper withBorder radius="md" p="md">
       <Stack gap="md">
         <Title order={4}>Score hebdomadaire</Title>
+        <Text size="xs" c="dimmed">
+          Une note sur 100 qui résume chaque semaine : objectifs sport et chien atteints, et humeur moyenne.
+        </Text>
         {hasData ? (
           <BarChart
             h={220}

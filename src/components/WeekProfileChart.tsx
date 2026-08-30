@@ -1,4 +1,4 @@
-import { Paper, Stack, Title } from '@mantine/core'
+import { Paper, Stack, Text, Title } from '@mantine/core'
 import { RadarChart } from '@mantine/charts'
 import dayjs from 'dayjs'
 import { startOfIsoWeek, toDateKey, weekDays } from '../lib/dates'
@@ -30,6 +30,10 @@ export function WeekProfileChart({ workouts, weightEntries, moodEntries }: WeekP
     <Paper withBorder radius="md" p="md">
       <Stack gap="md">
         <Title order={4}>Profil de la semaine</Title>
+        <Text size="xs" c="dimmed">
+          Où en est ta semaine en cours sur chaque axe (100 = objectif atteint), pour repérer d'un coup d'œil ce
+          qui traîne.
+        </Text>
         <RadarChart
           h={220}
           data={data}

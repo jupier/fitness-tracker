@@ -16,6 +16,10 @@ export function MoodActivityChart({ workouts, moodEntries }: MoodActivityChartPr
     <Paper withBorder radius="md" p="md">
       <Stack gap="md">
         <Title order={4}>Humeur vs activité</Title>
+        <Text size="xs" c="dimmed">
+          Compare ton humeur moyenne les jours où tu as bougé à celle des jours sans activité, pour voir si le
+          sport influence ton moral.
+        </Text>
         {hasEnoughData ? (
           <BarsList
             data={[
