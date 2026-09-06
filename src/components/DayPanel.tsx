@@ -13,7 +13,6 @@ import {
   Text,
   Textarea,
   TextInput,
-  Title,
   UnstyledButton,
 } from '@mantine/core'
 import { IconBrandStrava, IconChevronDown, IconChevronUp, IconPlus, IconTrash } from '@tabler/icons-react'
@@ -23,6 +22,7 @@ import { confirmDelete } from '../lib/confirm'
 import { toDateKey } from '../lib/dates'
 import { extractStravaEmbed } from '../lib/strava'
 import { StravaEmbed } from './StravaEmbed'
+import { DecimalInput } from './DecimalInput'
 import { WeightInput } from './WeightInput'
 import { MoodInput } from './MoodInput'
 import type { ActivityTypeConfig } from '../constants'
@@ -135,16 +135,7 @@ function EntryRow({
               min={0}
               w={140}
             />
-            <NumberInput
-              label="Distance (km)"
-              placeholder="5.2"
-              decimalScale={1}
-              step={0.1}
-              value={distance}
-              onChange={(v) => setDistance(typeof v === 'number' ? v : '')}
-              min={0}
-              w={140}
-            />
+            <DecimalInput label="Distance (km)" placeholder="5,2" value={distance} onChange={setDistance} w={140} />
           </Group>
           <div>
             <Text size="xs" fw={500} mb={4}>
@@ -208,7 +199,6 @@ export function DayPanel({
   const dateKey = toDateKey(date)
   const entries = workouts.filter((w) => w.date === dateKey)
   const isFuture = date.isAfter(dayjs(), 'day')
-  const isToday = date.isSame(dayjs(), 'day')
 
   const submitCustom = () => {
     if (!customValue.trim()) return
@@ -219,10 +209,6 @@ export function DayPanel({
 
   return (
     <Stack gap="md">
-      <Title order={3} tt="capitalize">
-        {isToday ? "Aujourd'hui" : date.format('dddd D MMMM')}
-      </Title>
-
       {entries.length > 0 && (
         <Stack gap={2}>
           {entries.map((e) => {

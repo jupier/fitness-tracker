@@ -104,6 +104,43 @@ function AppContent({ userId }: { userId: string }) {
   const [dayDetailOpen, setDayDetailOpen] = useState(false)
   const { colorScheme, toggleColorScheme } = useMantineColorScheme()
 
+  useEffect(() => {
+    const syncFromUrl = () => {
+      const params = new URLSearchParams(window.location.search)
+
+      const tab = params.get('tab')
+      setActiveTab(NAV_ITEMS.some((item) => item.value === tab) ? (tab as TabValue) : 'calendrier')
+
+      const day = params.get('day')
+      if (day && /^\d{4}-\d{2}-\d{2}$/.test(day) && dayjs(day).isValid()) {
+        setSelectedDay(dayjs(day))
+        setDayDetailOpen(true)
+      } else {
+        setDayDetailOpen(false)
+      }
+    }
+    syncFromUrl()
+    window.addEventListener('popstate', syncFromUrl)
+    return () => window.removeEventListener('popstate', syncFromUrl)
+  }, [])
+
+  const switchTab = (tab: TabValue) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', tab)
+    window.history.pushState({}, '', url)
+    setActiveTab(tab)
+  }
+
+  const openDay = (day: Dayjs) => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('day', toDateKey(day))
+    window.history.pushState({}, '', url)
+    setSelectedDay(day)
+    setDayDetailOpen(true)
+  }
+
+  const closeDay = () => window.history.back()
+
   const activityTypes = useMemo(() => deriveActivityTypes(workouts), [workouts])
   const streak = useMemo(() => computeStreak(workouts), [workouts])
   const dayStreak = useMemo(() => computeDayStreak(workouts), [workouts])
@@ -166,10 +203,21 @@ function AppContent({ userId }: { userId: string }) {
     <AppShell header={{ height: 56 }} footer={{ height: 64 }} padding="md">
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Group gap={8}>
-            <Logo size={26} />
-            <Title order={3}>Routine</Title>
-          </Group>
+          {activeTab === 'calendrier' && dayDetailOpen ? (
+            <Group gap={8}>
+              <ActionIcon variant="subtle" onClick={closeDay} aria-label="Retour au calendrier">
+                <IconArrowLeft size={18} />
+              </ActionIcon>
+              <Title order={3} tt="capitalize">
+                {selectedDay.isSame(dayjs(), 'day') ? "Aujourd'hui" : selectedDay.format('dddd D MMMM')}
+              </Title>
+            </Group>
+          ) : (
+            <Group gap={8}>
+              <Logo size={26} />
+              <Title order={3}>Routine</Title>
+            </Group>
+          )}
           <Group gap="xs">
             <ActionIcon
               variant="subtle"
@@ -203,18 +251,6 @@ function AppContent({ userId }: { userId: string }) {
 
           {activeTab === 'calendrier' && dayDetailOpen && (
             <Stack gap="lg" py="md">
-              <Group gap="xs">
-                <ActionIcon
-                  variant="subtle"
-                  onClick={() => setDayDetailOpen(false)}
-                  aria-label="Retour au calendrier"
-                >
-                  <IconArrowLeft size={18} />
-                </ActionIcon>
-                <Text size="sm" c="dimmed">
-                  Retour au calendrier
-                </Text>
-              </Group>
               <DayPanel
                 date={selectedDay}
                 workouts={workouts}
@@ -245,10 +281,7 @@ function AppContent({ userId }: { userId: string }) {
                 moodEntries={moodEntries}
                 activityTypes={activityTypes}
                 selectedDate={toDateKey(selectedDay)}
-                onDayClick={(day) => {
-                  setSelectedDay(day)
-                  setDayDetailOpen(true)
-                }}
+                onDayClick={openDay}
               />
             </Stack>
           )}
@@ -302,7 +335,7 @@ function AppContent({ userId }: { userId: string }) {
             return (
               <UnstyledButton
                 key={item.value}
-                onClick={() => setActiveTab(item.value)}
+                onClick={() => switchTab(item.value)}
                 style={{
                   height: '100%',
                   display: 'flex',

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Button, Group, NumberInput, Paper, Stack, Title } from '@mantine/core'
+import { Button, Group, Paper, Stack, Title } from '@mantine/core'
 import dayjs from 'dayjs'
+import { DecimalInput } from './DecimalInput'
 import type { WeightEntry } from '../types'
 
 interface WeightInputProps {
@@ -29,15 +30,7 @@ export function WeightInput({ date, entries, onAdd }: WeightInputProps) {
       <Stack gap="sm">
         <Title order={4}>Poids</Title>
         <Group align="flex-end">
-          <NumberInput
-            label={label}
-            placeholder="72.5"
-            decimalScale={1}
-            step={0.1}
-            value={value}
-            onChange={(v) => setValue(typeof v === 'number' ? v : '')}
-            w={140}
-          />
+          <DecimalInput label={label} placeholder="72,5" value={value} onChange={setValue} w={140} />
           <Button onClick={submit} disabled={value === ''}>
             Enregistrer
           </Button>
