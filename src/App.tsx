@@ -214,13 +214,20 @@ function AppContent({ userId }: { userId: string }) {
     <AppShell header={{ height: 56 }} footer={{ height: 64 }} padding="md">
       <AppShell.Header>
         <Container size="sm" h="100%" px="md">
-          <Group h="100%" justify="space-between">
+          <Group h="100%" justify="space-between" wrap="nowrap">
             {activeTab === 'calendrier' && dayDetailOpen ? (
-              <Group gap={8}>
-                <ActionIcon variant="light" color="blue" size="lg" onClick={closeDay} aria-label="Retour au calendrier">
+              <Group gap={8} wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
+                <ActionIcon
+                  variant="light"
+                  color="blue"
+                  size="lg"
+                  onClick={closeDay}
+                  aria-label="Retour au calendrier"
+                  style={{ flexShrink: 0 }}
+                >
                   <IconArrowLeft size={20} />
                 </ActionIcon>
-                <Title order={3} tt="capitalize">
+                <Title order={3} tt="capitalize" lineClamp={1} style={{ minWidth: 0 }}>
                   {selectedDay.isSame(dayjs(), 'day') ? "Aujourd'hui" : selectedDay.format('dddd D MMMM')}
                 </Title>
               </Group>
@@ -230,7 +237,7 @@ function AppContent({ userId }: { userId: string }) {
                 <Title order={3}>Routine</Title>
               </Group>
             )}
-            <Group gap="xs">
+            <Group gap="xs" style={{ flexShrink: 0 }}>
               <ActionIcon
                 variant="subtle"
                 onClick={() => toggleColorScheme()}
