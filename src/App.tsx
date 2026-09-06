@@ -202,39 +202,41 @@ function AppContent({ userId }: { userId: string }) {
   return (
     <AppShell header={{ height: 56 }} footer={{ height: 64 }} padding="md">
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          {activeTab === 'calendrier' && dayDetailOpen ? (
-            <Group gap={8}>
-              <ActionIcon variant="subtle" onClick={closeDay} aria-label="Retour au calendrier">
-                <IconArrowLeft size={18} />
+        <Container size="sm" h="100%" px="md">
+          <Group h="100%" justify="space-between">
+            {activeTab === 'calendrier' && dayDetailOpen ? (
+              <Group gap={8}>
+                <ActionIcon variant="light" color="blue" size="lg" onClick={closeDay} aria-label="Retour au calendrier">
+                  <IconArrowLeft size={20} />
+                </ActionIcon>
+                <Title order={3} tt="capitalize">
+                  {selectedDay.isSame(dayjs(), 'day') ? "Aujourd'hui" : selectedDay.format('dddd D MMMM')}
+                </Title>
+              </Group>
+            ) : (
+              <Group gap={8}>
+                <Logo size={26} />
+                <Title order={3}>Routine</Title>
+              </Group>
+            )}
+            <Group gap="xs">
+              <ActionIcon
+                variant="subtle"
+                onClick={() => toggleColorScheme()}
+                aria-label="Changer le thème"
+              >
+                {colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
               </ActionIcon>
-              <Title order={3} tt="capitalize">
-                {selectedDay.isSame(dayjs(), 'day') ? "Aujourd'hui" : selectedDay.format('dddd D MMMM')}
-              </Title>
+              <ActionIcon
+                variant="subtle"
+                onClick={() => supabase.auth.signOut()}
+                aria-label="Déconnexion"
+              >
+                <IconLogout size={18} />
+              </ActionIcon>
             </Group>
-          ) : (
-            <Group gap={8}>
-              <Logo size={26} />
-              <Title order={3}>Routine</Title>
-            </Group>
-          )}
-          <Group gap="xs">
-            <ActionIcon
-              variant="subtle"
-              onClick={() => toggleColorScheme()}
-              aria-label="Changer le thème"
-            >
-              {colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
-            </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              onClick={() => supabase.auth.signOut()}
-              aria-label="Déconnexion"
-            >
-              <IconLogout size={18} />
-            </ActionIcon>
           </Group>
-        </Group>
+        </Container>
       </AppShell.Header>
       <AppShell.Main>
         <Container size="sm">
