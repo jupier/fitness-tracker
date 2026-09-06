@@ -131,7 +131,10 @@ function AppContent({ userId }: { userId: string }) {
     setActiveTab(tab)
   }
 
+  const calendarScrollRef = useRef(0)
+
   const openDay = (day: Dayjs) => {
+    calendarScrollRef.current = window.scrollY
     const url = new URL(window.location.href)
     url.searchParams.set('day', toDateKey(day))
     window.history.pushState({}, '', url)
@@ -140,6 +143,14 @@ function AppContent({ userId }: { userId: string }) {
   }
 
   const closeDay = () => window.history.back()
+
+  useEffect(() => {
+    if (dayDetailOpen) {
+      window.scrollTo(0, 0)
+    } else {
+      window.scrollTo(0, calendarScrollRef.current)
+    }
+  }, [dayDetailOpen])
 
   const activityTypes = useMemo(() => deriveActivityTypes(workouts), [workouts])
   const streak = useMemo(() => computeStreak(workouts), [workouts])
@@ -251,41 +262,41 @@ function AppContent({ userId }: { userId: string }) {
             </Alert>
           )}
 
-          {activeTab === 'calendrier' && dayDetailOpen && (
-            <Stack gap="lg" py="md">
-              <DayPanel
-                date={selectedDay}
-                workouts={workouts}
-                activityTypes={activityTypes}
-                onAdd={addWorkout}
-                onRemove={removeWorkout}
-                onUpdate={updateWorkout}
-                weightEntries={entries}
-                onAddWeight={addEntry}
-                moodEntries={moodEntries}
-                onAddMood={addMoodEntry}
-                onUpdateMoodNote={updateMoodNote}
-              />
-            </Stack>
-          )}
+          {activeTab === 'calendrier' && (
+            <>
+              <Stack gap="lg" py="md" style={{ display: dayDetailOpen ? 'flex' : 'none' }}>
+                <DayPanel
+                  date={selectedDay}
+                  workouts={workouts}
+                  activityTypes={activityTypes}
+                  onAdd={addWorkout}
+                  onRemove={removeWorkout}
+                  onUpdate={updateWorkout}
+                  weightEntries={entries}
+                  onAddWeight={addEntry}
+                  moodEntries={moodEntries}
+                  onAddMood={addMoodEntry}
+                  onUpdateMoodNote={updateMoodNote}
+                />
+              </Stack>
 
-          {activeTab === 'calendrier' && !dayDetailOpen && (
-            <Stack gap="lg" py="md">
-              <Divider label="Progression" labelPosition="left" />
-              <StreakBanner streak={streak} dayStreak={dayStreak} />
-              <WeekSummary workouts={currentWeekWorkouts} />
+              <Stack gap="lg" py="md" style={{ display: dayDetailOpen ? 'none' : 'flex' }}>
+                <Divider label="Progression" labelPosition="left" />
+                <StreakBanner streak={streak} dayStreak={dayStreak} />
+                <WeekSummary workouts={currentWeekWorkouts} />
 
-              <Divider label="Journal" labelPosition="left" />
-              <ReminderBanner weekWorkouts={currentWeekWorkouts} />
-              <WeekGrid
-                workouts={workouts}
-                weightEntries={entries}
-                moodEntries={moodEntries}
-                activityTypes={activityTypes}
-                selectedDate={toDateKey(selectedDay)}
-                onDayClick={openDay}
-              />
-            </Stack>
+                <Divider label="Journal" labelPosition="left" />
+                <ReminderBanner weekWorkouts={currentWeekWorkouts} />
+                <WeekGrid
+                  workouts={workouts}
+                  weightEntries={entries}
+                  moodEntries={moodEntries}
+                  activityTypes={activityTypes}
+                  selectedDate={toDateKey(selectedDay)}
+                  onDayClick={openDay}
+                />
+              </Stack>
+            </>
           )}
 
           {activeTab === 'analyse' && (

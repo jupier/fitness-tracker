@@ -30,3 +30,22 @@ body {
     animation: none;
   }
 }
+
+.day-row {
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+/* (hover: hover) évite l'effet "collant" sur mobile, où le survol reste
+   affiché après un tap tant qu'on ne touche pas ailleurs. */
+@media (hover: hover) {
+  .day-row:hover {
+    background-color: var(--mantine-color-default-hover);
+  }
+}
+
+.day-row:active {
+  background-color: var(--mantine-color-default-hover);
+  transform: scale(0.98);
+}
