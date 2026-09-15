@@ -258,7 +258,18 @@ function AppContent({ userId }: { userId: string }) {
       </AppShell.Header>
       <AppShell.Main>
         <Container size="sm">
-          {hasLoadError && (
+          {!dataLoaded && (
+            <Center py={80}>
+              <Stack align="center" gap="sm">
+                <Loader />
+                <Text size="sm" c="dimmed">
+                  Chargement de tes données...
+                </Text>
+              </Stack>
+            </Center>
+          )}
+
+          {dataLoaded && hasLoadError && (
             <Alert color="red" icon={<IconAlertTriangle size={16} />} title="Certaines données n'ont pas pu charger" mb="md">
               <Group justify="space-between" wrap="nowrap">
                 <Text size="sm">Vérifie ta connexion et réessaie.</Text>
@@ -269,7 +280,7 @@ function AppContent({ userId }: { userId: string }) {
             </Alert>
           )}
 
-          {activeTab === 'calendrier' && (
+          {dataLoaded && activeTab === 'calendrier' && (
             <>
               <Stack gap="lg" py="md" style={{ display: dayDetailOpen ? 'flex' : 'none' }}>
                 <DayPanel
@@ -306,7 +317,7 @@ function AppContent({ userId }: { userId: string }) {
             </>
           )}
 
-          {activeTab === 'analyse' && (
+          {dataLoaded && activeTab === 'analyse' && (
             <Stack gap="lg" py="md">
               <Divider label="Score & profil" labelPosition="left" />
               <WeeklyScoreChart workouts={workouts} moodEntries={moodEntries} />
@@ -326,13 +337,13 @@ function AppContent({ userId }: { userId: string }) {
             </Stack>
           )}
 
-          {activeTab === 'badges' && (
+          {dataLoaded && activeTab === 'badges' && (
             <Stack gap="lg" py="md">
               <BadgesPanel unlocked={unlockedBadges} />
             </Stack>
           )}
 
-          {activeTab === 'historique' && (
+          {dataLoaded && activeTab === 'historique' && (
             <Stack gap="lg" py="md">
               <HistoryList
                 workouts={workouts}
