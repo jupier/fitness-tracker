@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Badge, Divider, Group, Paper, Stack, Text, UnstyledButton } from '@mantine/core'
+import { Badge, Divider, Group, Paper, Stack, Text, UnstyledButton, useComputedColorScheme } from '@mantine/core'
 import { IconChevronRight, IconWeight } from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
 import { DAY_LABELS, isToday, startOfIsoWeek, toDateKey, weekDays, weekLabel } from '../lib/dates'
 import { activityConfig } from '../lib/activityTypes'
-import { moodLevel } from '../lib/mood'
+import { moodColor, moodLevel } from '../lib/mood'
 import type { ActivityTypeConfig } from '../constants'
 import type { MoodEntry, WeightEntry, Workout } from '../types'
 
@@ -35,6 +35,7 @@ export function WeekGrid({
   selectedDate,
   onDayClick,
 }: WeekGridProps) {
+  const colorScheme = useComputedColorScheme('light')
   const byDate = new Map<string, Workout[]>()
   for (const w of workouts) {
     const list = byDate.get(w.date) ?? []
@@ -87,7 +88,9 @@ export function WeekGrid({
           : start.isSame(lastWeekStart, 'day')
             ? 'Semaine dernière'
             : weekLabel(start)
-        const days = weekDays(start).map((day, i) => ({ day, i }))
+        const days = weekDays(start)
+          .map((day, i) => ({ day, i }))
+          .filter(({ day }) => !day.isAfter(dayjs(), 'day'))
         return (
           <Stack key={toDateKey(start)} gap={6}>
             <Divider label={label} labelPosition="center" />
@@ -98,19 +101,13 @@ export function WeekGrid({
               const weight = weightByDate.get(key)
               const today = isToday(day)
               const selected = key === selectedDate
-              const future = day.isAfter(dayjs(), 'day')
               return (
-                <UnstyledButton
-                  key={key}
-                  onClick={() => onDayClick(day)}
-                  disabled={future}
-                  style={{ opacity: future ? 0.5 : 1 }}
-                >
+                <UnstyledButton key={key} onClick={() => onDayClick(day)}>
                   <Paper
                     withBorder
                     radius="md"
                     p="xs"
-                    className={future ? undefined : 'day-row'}
+                    className="day-row"
                     bg={today ? 'var(--mantine-color-blue-light)' : undefined}
                     style={{
                       borderColor: selected
@@ -132,7 +129,7 @@ export function WeekGrid({
                       </Stack>
 
                       <Group gap={4} wrap="wrap" style={{ flex: 1 }}>
-                        {dayEntries.length === 0 && !future && (
+                        {dayEntries.length === 0 && (
                           <Text size="xs" c="dimmed">
                             Rien de loggé
                           </Text>
@@ -169,7 +166,12 @@ export function WeekGrid({
                             </Text>
                           </Group>
                         )}
-                        {mood && <span style={{ fontSize: 15, lineHeight: 1 }}>{moodLevel(mood.mood).emoji}</span>}
+                        {mood &&
+                          (() => {
+                            const level = moodLevel(mood.mood)
+                            const Icon = level.icon
+                            return <Icon size={16} color={moodColor(level, colorScheme)} />
+                          })()}
                         <IconChevronRight size={14} style={{ color: 'var(--mantine-color-dimmed)' }} />
                       </Group>
                     </Group>

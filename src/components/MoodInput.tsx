@@ -1,6 +1,16 @@
 import { useState } from 'react'
-import { Button, Collapse, Group, Paper, Stack, Textarea, Title, UnstyledButton } from '@mantine/core'
-import { MOOD_LEVELS } from '../lib/mood'
+import {
+  Button,
+  Collapse,
+  Group,
+  Paper,
+  Stack,
+  Textarea,
+  Title,
+  UnstyledButton,
+  useComputedColorScheme,
+} from '@mantine/core'
+import { MOOD_LEVELS, moodColor } from '../lib/mood'
 import type { MoodEntry } from '../types'
 
 interface MoodInputProps {
@@ -13,6 +23,7 @@ interface MoodInputProps {
 export function MoodInput({ date, entries, onAdd, onUpdateNote }: MoodInputProps) {
   const [noteOpen, setNoteOpen] = useState(false)
   const [noteValue, setNoteValue] = useState('')
+  const colorScheme = useComputedColorScheme('light')
 
   const dayEntry = entries.find((e) => e.date === date)
 
@@ -38,23 +49,23 @@ export function MoodInput({ date, entries, onAdd, onUpdateNote }: MoodInputProps
         <Group justify="center" gap="xs">
           {MOOD_LEVELS.map((level) => {
             const selected = dayEntry?.mood === level.value
+            const color = moodColor(level, colorScheme)
+            const Icon = level.icon
             return (
               <UnstyledButton
                 key={level.value}
                 onClick={() => pick(level.value)}
                 aria-label={level.label}
                 style={{
-                  fontSize: 28,
-                  lineHeight: 1,
                   padding: 8,
                   borderRadius: 12,
-                  border: selected ? `2px solid ${level.colorLight}` : '2px solid transparent',
+                  border: selected ? `2px solid ${color}` : '2px solid transparent',
                   background: selected ? 'var(--mantine-color-default-hover)' : undefined,
                   transform: selected ? 'scale(1.1)' : undefined,
                   transition: 'transform 0.15s ease',
                 }}
               >
-                {level.emoji}
+                <Icon size={28} color={color} />
               </UnstyledButton>
             )
           })}

@@ -1,9 +1,9 @@
-import { ActionIcon, Badge, Group, Paper, Rating, Stack, Text } from '@mantine/core'
+import { ActionIcon, Badge, Group, Paper, Rating, Stack, Text, useComputedColorScheme } from '@mantine/core'
 import { IconBrandStrava, IconTrash, IconWeight } from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import { activityConfig } from '../lib/activityTypes'
 import { confirmDelete } from '../lib/confirm'
-import { moodLevel } from '../lib/mood'
+import { moodColor, moodLevel } from '../lib/mood'
 import type { ActivityTypeConfig } from '../constants'
 import type { MoodEntry, WeightEntry, Workout } from '../types'
 
@@ -28,6 +28,7 @@ export function HistoryList({
   onRemoveMood,
   limit = 10,
 }: HistoryListProps) {
+  const colorScheme = useComputedColorScheme('light')
   const items: (
     | { kind: 'workout'; data: Workout }
     | { kind: 'weight'; data: WeightEntry }
@@ -135,10 +136,11 @@ export function HistoryList({
             )
           }
           const level = moodLevel(item.data.mood)
+          const MoodIcon = level.icon
           return (
             <Group key={`m-${item.data.id}`} justify="space-between" wrap="nowrap">
               <Group gap={8} wrap="wrap">
-                <Text size="sm">{level.emoji}</Text>
+                <MoodIcon size={16} color={moodColor(level, colorScheme)} />
                 <Text size="sm">{level.label}</Text>
                 <Text size="xs" c="dimmed">
                   {dayjs(item.data.date).format('D MMM')}
