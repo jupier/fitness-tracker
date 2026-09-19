@@ -8,6 +8,7 @@ import {
   IconPlant2,
   IconRun,
   IconSwimming,
+  IconTools,
   IconVacuumCleaner,
   IconZzz,
 } from '@tabler/icons-react'
@@ -33,6 +34,7 @@ export const DEFAULT_ACTIVITY_TYPES: ActivityTypeConfig[] = [
   { type: 'jardinage', label: 'Jardinage', icon: IconPlant2, color: 'lime' },
   { type: 'tondeuse', label: 'Tondeuse', icon: IconLawnMower, color: 'cyan' },
   { type: 'menage', label: 'Ménage', icon: IconVacuumCleaner, color: 'pink' },
+  { type: 'bricolage', label: 'Bricolage', icon: IconTools, color: 'red' },
   { type: 'paris', label: 'Paris', icon: IconBuildingEiffelTower, color: 'indigo' },
   { type: 'repos', label: 'Repos', icon: IconZzz, color: 'gray' },
 ]
@@ -51,7 +53,7 @@ export const DOG_TYPE = 'chien'
 export const REST_TYPE = 'repos'
 
 // ...sauf ces types-là, suivis normalement mais exclus des objectifs.
-export const GOAL_EXCLUDED_TYPES = ['jardinage', 'tondeuse', 'menage', 'paris', REST_TYPE]
+export const GOAL_EXCLUDED_TYPES = ['jardinage', 'tondeuse', 'menage', 'bricolage', 'paris', REST_TYPE]
 
 export const WEEKLY_GOALS = {
   sport: 2,
