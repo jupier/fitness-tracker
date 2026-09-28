@@ -108,12 +108,12 @@ export function WeekGrid({
                     radius="md"
                     p="xs"
                     className="day-row"
-                    bg={today ? 'var(--mantine-color-blue-light)' : undefined}
+                    bg={today ? 'var(--mantine-primary-color-light)' : undefined}
                     style={{
                       borderColor: selected
                         ? 'var(--mantine-color-violet-filled)'
                         : today
-                          ? 'var(--mantine-color-blue-outline)'
+                          ? 'var(--mantine-primary-color-6)'
                           : undefined,
                       borderWidth: selected ? 2 : undefined,
                     }}

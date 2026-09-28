@@ -13,7 +13,6 @@ import {
   Text,
   Title,
   UnstyledButton,
-  useMantineColorScheme,
 } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import {
@@ -22,9 +21,7 @@ import {
   IconCalendar,
   IconChartBar,
   IconHistory,
-  IconLogout,
-  IconMoon,
-  IconSun,
+  IconSettings,
   IconTrophy,
 } from '@tabler/icons-react'
 import dayjs, { type Dayjs } from 'dayjs'
@@ -49,12 +46,12 @@ import { MoodActivityChart } from './components/MoodActivityChart'
 import { WeeklyScoreChart } from './components/WeeklyScoreChart'
 import { WeekProfileChart } from './components/WeekProfileChart'
 import { HistoryList } from './components/HistoryList'
+import { OptionsPage } from './components/OptionsPage'
 import { deriveActivityTypes } from './lib/activityTypes'
 import { startOfIsoWeek, toDateKey, weekDays } from './lib/dates'
 import { computeDayStreak, computeStreak, weekGoalsMet } from './lib/goals'
 import { BADGES, unlockedBadgeIds } from './lib/badges'
 import { fireConfetti, hasCelebratedWeek, markCelebratedWeek } from './lib/celebrate'
-import { supabase } from './lib/supabase'
 
 type TabValue = 'calendrier' | 'analyse' | 'badges' | 'historique'
 
@@ -102,7 +99,7 @@ function AppContent({ userId }: { userId: string }) {
   const [activeTab, setActiveTab] = useState<TabValue>('calendrier')
   const [selectedDay, setSelectedDay] = useState<Dayjs>(() => dayjs())
   const [dayDetailOpen, setDayDetailOpen] = useState(false)
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme()
+  const [optionsOpen, setOptionsOpen] = useState(false)
 
   useEffect(() => {
     const syncFromUrl = () => {
@@ -118,6 +115,8 @@ function AppContent({ userId }: { userId: string }) {
       } else {
         setDayDetailOpen(false)
       }
+
+      setOptionsOpen(params.get('options') === '1')
     }
     syncFromUrl()
     window.addEventListener('popstate', syncFromUrl)
@@ -127,8 +126,10 @@ function AppContent({ userId }: { userId: string }) {
   const switchTab = (tab: TabValue) => {
     const url = new URL(window.location.href)
     url.searchParams.set('tab', tab)
+    url.searchParams.delete('options')
     window.history.pushState({}, '', url)
     setActiveTab(tab)
+    setOptionsOpen(false)
   }
 
   const calendarScrollRef = useRef(0)
@@ -144,6 +145,15 @@ function AppContent({ userId }: { userId: string }) {
 
   const closeDay = () => window.history.back()
 
+  const openOptions = () => {
+    const url = new URL(window.location.href)
+    url.searchParams.set('options', '1')
+    window.history.pushState({}, '', url)
+    setOptionsOpen(true)
+  }
+
+  const closeOptions = () => window.history.back()
+
   useEffect(() => {
     if (dayDetailOpen) {
       window.scrollTo(0, 0)
@@ -151,6 +161,10 @@ function AppContent({ userId }: { userId: string }) {
       window.scrollTo(0, calendarScrollRef.current)
     }
   }, [dayDetailOpen])
+
+  useEffect(() => {
+    if (optionsOpen) window.scrollTo(0, 0)
+  }, [optionsOpen])
 
   const activityTypes = useMemo(() => deriveActivityTypes(workouts), [workouts])
   const streak = useMemo(() => computeStreak(workouts), [workouts])
@@ -219,7 +233,6 @@ function AppContent({ userId }: { userId: string }) {
               <Group gap={8} wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
                 <ActionIcon
                   variant="light"
-                  color="blue"
                   size="lg"
                   onClick={closeDay}
                   aria-label="Retour au calendrier"
@@ -231,28 +244,32 @@ function AppContent({ userId }: { userId: string }) {
                   {selectedDay.isSame(dayjs(), 'day') ? "Aujourd'hui" : selectedDay.format('dddd D MMMM')}
                 </Title>
               </Group>
+            ) : optionsOpen ? (
+              <Group gap={8} wrap="nowrap" style={{ minWidth: 0, flex: 1 }}>
+                <ActionIcon
+                  variant="light"
+                  size="lg"
+                  onClick={closeOptions}
+                  aria-label="Retour"
+                  style={{ flexShrink: 0 }}
+                >
+                  <IconArrowLeft size={20} />
+                </ActionIcon>
+                <Title order={3} style={{ minWidth: 0 }}>
+                  Options
+                </Title>
+              </Group>
             ) : (
               <Group gap={8}>
                 <Logo size={26} />
                 <Title order={3}>Routine</Title>
               </Group>
             )}
-            <Group gap="xs" style={{ flexShrink: 0 }}>
-              <ActionIcon
-                variant="subtle"
-                onClick={() => toggleColorScheme()}
-                aria-label="Changer le thème"
-              >
-                {colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
+            {!dayDetailOpen && !optionsOpen && (
+              <ActionIcon variant="subtle" onClick={openOptions} aria-label="Options" style={{ flexShrink: 0 }}>
+                <IconSettings size={20} />
               </ActionIcon>
-              <ActionIcon
-                variant="subtle"
-                onClick={() => supabase.auth.signOut()}
-                aria-label="Déconnexion"
-              >
-                <IconLogout size={18} />
-              </ActionIcon>
-            </Group>
+            )}
           </Group>
         </Container>
       </AppShell.Header>
@@ -280,7 +297,9 @@ function AppContent({ userId }: { userId: string }) {
             </Alert>
           )}
 
-          {dataLoaded && activeTab === 'calendrier' && (
+          {dataLoaded && optionsOpen && <OptionsPage />}
+
+          {dataLoaded && !optionsOpen && activeTab === 'calendrier' && (
             <>
               <Stack gap="lg" py="md" style={{ display: dayDetailOpen ? 'flex' : 'none' }}>
                 <DayPanel
@@ -317,7 +336,7 @@ function AppContent({ userId }: { userId: string }) {
             </>
           )}
 
-          {dataLoaded && activeTab === 'analyse' && (
+          {dataLoaded && !optionsOpen && activeTab === 'analyse' && (
             <Stack gap="lg" py="md">
               <Divider label="Score & profil" labelPosition="left" />
               <WeeklyScoreChart workouts={workouts} moodEntries={moodEntries} />
@@ -337,13 +356,13 @@ function AppContent({ userId }: { userId: string }) {
             </Stack>
           )}
 
-          {dataLoaded && activeTab === 'badges' && (
+          {dataLoaded && !optionsOpen && activeTab === 'badges' && (
             <Stack gap="lg" py="md">
               <BadgesPanel unlocked={unlockedBadges} />
             </Stack>
           )}
 
-          {dataLoaded && activeTab === 'historique' && (
+          {dataLoaded && !optionsOpen && activeTab === 'historique' && (
             <Stack gap="lg" py="md">
               <HistoryList
                 workouts={workouts}
@@ -374,7 +393,7 @@ function AppContent({ userId }: { userId: string }) {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 2,
-                  color: active ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-dimmed)',
+                  color: active ? 'var(--mantine-primary-color-6)' : 'var(--mantine-color-dimmed)',
                 }}
               >
                 <Icon size={22} />
