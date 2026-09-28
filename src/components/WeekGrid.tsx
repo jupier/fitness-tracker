@@ -76,7 +76,12 @@ export function WeekGrid({
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [reachedEnd, maxWeeksShown])
+    // Recréer l'observer à chaque `weeksShown` : IntersectionObserver ne
+    // notifie que sur un changement d'état, donc si le sentinel reste visible
+    // en continu (page assez grande, peu de semaines chargées), un seul
+    // callback se déclenche puis plus rien sans ce ré-abonnement — un nouvel
+    // `observe()` renvoie immédiatement l'état courant et relance la chaîne.
+  }, [reachedEnd, maxWeeksShown, weeksShown])
 
   const weekStarts = Array.from({ length: weeksShown }, (_, idx) => currentWeekStart.subtract(idx, 'week'))
 
