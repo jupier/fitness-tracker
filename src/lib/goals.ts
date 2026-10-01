@@ -1,5 +1,11 @@
 import dayjs from 'dayjs'
-import { DOG_TYPE, GOAL_EXCLUDED_TYPES, WEEKLY_GOALS } from '../constants'
+import {
+  DOG_TYPE,
+  GOAL_EXCLUDED_TYPES,
+  HEAVY_CHORE_SPORT_THRESHOLD_MIN,
+  HEAVY_CHORE_TYPES,
+  WEEKLY_GOALS,
+} from '../constants'
 import { startOfIsoWeek, toDateKey, weekDays } from './dates'
 import type { Workout } from '../types'
 
@@ -32,9 +38,22 @@ export interface WeekProgress {
 export function weekProgress(weekWorkouts: Workout[]): WeekProgress {
   let sport = 0
   let chien = 0
+  const heavyChoreDaysCounted = new Set<string>()
+
   for (const w of weekWorkouts) {
-    if (w.type === DOG_TYPE) chien++
-    else if (!GOAL_EXCLUDED_TYPES.includes(w.type)) sport++
+    if (w.type === DOG_TYPE) {
+      chien++
+      continue
+    }
+    if (HEAVY_CHORE_TYPES.includes(w.type)) {
+      const isHeavy = (w.duration_minutes ?? 0) > HEAVY_CHORE_SPORT_THRESHOLD_MIN
+      if (isHeavy && !heavyChoreDaysCounted.has(w.date)) {
+        heavyChoreDaysCounted.add(w.date)
+        sport++
+      }
+      continue
+    }
+    if (!GOAL_EXCLUDED_TYPES.includes(w.type)) sport++
   }
   return { sport, chien }
 }

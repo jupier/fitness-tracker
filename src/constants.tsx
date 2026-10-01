@@ -55,6 +55,12 @@ export const REST_TYPE = 'repos'
 // ...sauf ces types-là, suivis normalement mais exclus des objectifs.
 export const GOAL_EXCLUDED_TYPES = ['jardinage', 'tondeuse', 'menage', 'bricolage', 'paris', REST_TYPE]
 
+// ...et sauf jardinage/tondeuse quand la séance dépasse ce seuil : assez
+// physique pour compter comme du sport (une seule fois par jour, même si les
+// deux sont loggés le même jour).
+export const HEAVY_CHORE_TYPES = ['jardinage', 'tondeuse']
+export const HEAVY_CHORE_SPORT_THRESHOLD_MIN = 60
+
 export const WEEKLY_GOALS = {
   sport: 2,
   chien: 2,
